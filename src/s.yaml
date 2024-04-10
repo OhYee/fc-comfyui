@@ -1,0 +1,59 @@
+edition: 3.0.0 #  命令行YAML规范版本，遵循语义化版本（Semantic Versioning）规范
+name: fc-stable-diffusion
+access: "{{ access }}"
+vars:
+  region: "{{ region }}"
+  functionName: "{{ functionName }}"
+  imageUrl: "registry.{{ region }}.aliyuncs.com/ohyee/fc-demo:fc-comfyui-sd1.5-v1"
+  roleArn: "{{ roleArn }}"
+  logConfig: false
+
+resources:
+  comfyui:
+    component: fc3
+    actions:
+      success-deploy:
+        - run: |
+            s cli fc3 concurrency put --reserved-concurrency 1 --region ${this.props.region} --function-name ${this.props.functionName} -a {{ access }}
+          path: ./
+        # - component: fc3 concurrency put --reserved-concurrency 1
+    props:
+      region: ${vars.region}
+      functionName: '${vars.functionName}'
+      description: 'ComfyUI 函数'
+      logConfig: '${vars.logConfig}'
+
+      # 实例规格
+      timeout: 600
+      diskSize: 512
+      cpu: 8
+      memorySize: 32768
+      instanceConcurrency: 100
+      gpuConfig:
+        gpuMemorySize: 16384
+        gpuType: fc.gpu.tesla.1
+
+      # 运行时
+      runtime: custom-container
+      customContainerConfig:
+        port: 9000
+        image: ${vars.imageUrl} 
+
+
+  custom-domain:
+    component: fc3-domain
+    props: #  组件的属性值
+      region: ${vars.region}
+      domainName: auto
+      protocol: HTTP
+      routeConfig:
+        routes:
+          - functionName: ${resources.comfyui.props.functionName}
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            path: /*
+            qualifier: LATEST
