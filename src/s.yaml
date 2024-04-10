@@ -5,7 +5,6 @@ vars:
   region: "{{ region }}"
   functionName: "{{ functionName }}"
   imageUrl: "registry.{{ region }}.aliyuncs.com/ohyee/fc-demo:fc-comfyui-sd1.5-v1"
-  roleArn: "{{ roleArn }}"
   logConfig: false
 
 resources:

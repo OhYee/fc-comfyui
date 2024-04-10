@@ -29,11 +29,6 @@ FROM alpine/git:2.36.2 as custom_nodes
 
 WORKDIR /custom_nodes
 
-RUN git clone https://github.com/11cafe/comfyui-workspace-manager.git && \
-    cd comfyui-workspace-manager && \
-    git checkout 5dc8ab668fc330300a8b43a1687dbe7f5230b4fe && \
-    rm -rf .git
-
 RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git && \
     cd ComfyUI-Manager && \
     git checkout 02b2bf96d24ed6297dad8f676aa68d7512a166b3 && \

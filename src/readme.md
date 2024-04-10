@@ -72,13 +72,13 @@
 
 <appdetail id="flushContent">
 
-本案例将 ComfyUI  部署至阿里云函数计算，实现云上进行文生图、图生图等 AIGC 创作。
+本案例展示了如何将 ComfyUI 部署到阿里云函数计算上，从而在云端实现文生图和图生图等 AIGC 创作活动。
 
-ComfyUI 是一个专为 Stable Diffusion 的模型设计强大而模块化的 GUI，用户能够以节点为基础构建 AIGC 创作工作流。对于希望摆脱传统编码方式并采用更直观工作流程的用户来说，ComfyUI 是一个理想的工具。ComfyUI 由 Comfyanonymous 于 2023 年 1 月创建，开发初衷是为了学习 Stable Diffusion 模型的工作原理。由于其使用的便捷 Stable Diffusion 的创建者 Stability AI 也使用 ComfyUI 进行内部测试，并聘请了 Comfyanonymous 来帮助他们开发内部工具 。目前 ComfyUI 在 Github 上有超过 3 千 Fork，并且拥有超过 3 万 Star。
+ComfyUI 是一个为 Stable Diffusion 模型设计的，功能强大且高度模块化的图形用户界面（GUI）。它允许用户基于节点构建 AIGC 创作流程，非常适合那些想要摆脱传统编程方法、采用更直观操作流程的用户。该工具由 Comfyanonymous 在 2023 年 1 月创建，初衷是深入了解 Stable Diffusion 模型的运作机制。由于其易用性，Stable Diffusion 的开发者 Stability AI 也采用了 ComfyUI 进行内部测试，并聘请 Comfyanonymous 协助开发内部工具。目前，ComfyUI 在 Github 上的 Fork 数超过 3000，Star 数超过 30000。
 
-Stable Diffusion 是一款开源的扩散模型，由 CompVis、Stability AI 和 LAION 的研究人员和工程师创建。由于 Stable Diffusion 开源、扩展性强的特点，其受到了全球众多 AIGC 爱好者的追捧。根据模型网站 Civital 统计，目前最热门的模型已经超过 100 万次下载，超过 10 万次下载的模型 70 余个，各种风格、不同功能的模型超过 12 万。
+Stable Diffusion 是一款由 CompVis、Stability AI 和 LAION 的研究人员及工程师共同开发的开源扩散模型，凭借其开源和高扩展性特点，赢得了全球众多 AIGC 爱好者的支持。据 Civital 模型网站统计，目前最热门的模型下载次数已超过 100 万，有超过 70 个模型下载次数超过 10 万，提供各种风格和功能的模型总数超过 12 万。
 
-ComfyUI 在国内也很火热，通过 ComfyUI 进行文生图的教程在国内各大平台多次登入热搜榜、排行榜，引领了一波又一波的浪潮。
+在国内，ComfyUI 也受到广泛欢迎。通过 ComfyUI 创作文生图的教程已多次在各大平台热搜榜和排行榜上出现，掀起一阵又一阵的热潮。
 
 </appdetail>
 
@@ -86,81 +86,61 @@ ComfyUI 在国内也很火热，通过 ComfyUI 进行文生图的教程在国内
 
 <usedetail id="flushContent">
 
+
 ### 基本文生图
 
-进入页面后，点击 Queue Prompt 开始运行工作流，稍等片刻后即可得到第一张图片
+1. 打开 ComfyUI，点击“Queue Prompt”开始。
+2. 稍等片刻后，您将得到第一张图片。若需要恢复默认工作流，请使用“Load Default”，并记得保存您的工作流以避免丢失。
 
 ![](https://img.alicdn.com/imgextra/i2/O1CN01nML52f1mIRwjP3sPy_!!6000000004931-0-tps-1226-889.jpg)
 
-您可以随时使用 “Load Default” 恢复默认的工作流，请自行保存已经编辑好的工作流，避免丢失。
+### 挂载 NAS 和使用自定义节点
 
-<div id="mount_nas" />
+为使用自定义模型和节点，需先绑定文件管理 NAS。通过函数控制台的网络配置，绑定专有网络/交换机。若无相关资源，需先创建。
 
-### 挂载 NAS 使用自定义节点和模型
-
-
-默认创建的 ComfyUI 不支持上传自己的模型以及第三方节点，要上传文件首先需要绑定文件管理 NAS
-
-通过应用详情，跳转到函数控制台
-![](https://img.alicdn.com/imgextra/i2/O1CN01LQQyBF1jPN5LrmrYj_!!6000000004540-0-tps-1078-985.jpg)
-
-在函数详情，进行网络配置，绑定 专有网络/交换机。
-如果您当前没有相关资源，可以点击 “创建新的 VPC”、“创建新的交换机”，前往相关产品创建资源。专有网络、交换机不计费
-![](https://img.alicdn.com/imgextra/i4/O1CN01OPYefo1LCxZaaN2P7_!!6000000001264-0-tps-1359-897.jpg)
+1. **进入函数计算控制台**：通过应用详情，跳转到函数控制台
+  ![](https://img.alicdn.com/imgextra/i2/O1CN01LQQyBF1jPN5LrmrYj_!!6000000004540-0-tps-1078-985.jpg)
+2. **网络配置**：完成专有网络和交换机配置（如果没有相关资源，您可以点击 “创建新的 VPC”、“创建新的交换机”，前往相关产品创建资源。）
+  ![](https://img.alicdn.com/imgextra/i4/O1CN01OPYefo1LCxZaaN2P7_!!6000000001264-0-tps-1359-897.jpg)
+3. **NAS 挂载**：进行 NAS 挂载设置，绑定对应专有网络、交换机下存在的 NAS 挂载点。
+  函数本地目录请填写 `/mnt/auto` 或 `/mnt/auto/comfyui`；如果您曾经在当前 NAS 中使用过 Stable Diffusion 应用，可以考虑将远端目录设置为 `/fc-stable-diffusion-plus`，本地目录设置为 `/mnt/auto`。
+  大模型对文件 IO 要求较高，建议创建 **通用性能型 NAS 实例**，NAS 会根据存储的文件大小进行计费，不通规格的 NAS 计费单价不一致，请参考相关文档。
+  ![](https://img.alicdn.com/imgextra/i3/O1CN01JM4qq427roSToC5GI_!!6000000007851-0-tps-1424-1061.jpg)
 
 
-网络配置完毕后，进行 NAS 挂载配置。绑定对应专有网络、交换机下存在的 NAS 挂载点
-函数本地目录请填写 `/mnt/auto` 或 `/mnt/auto/comfyui`
+### 进入 ComfyUI 终端
 
-如果您当前没有相关资源，可以点击 “创建新的 NAS 文件系统”，并在 NAS 控制台创建 专有网络/交换机 下的挂载点。
-需要注意，大模型对文件 IO 要求较高，建议创建 **通用性能型 NAS 实例**。NAS 会根据存储的文件大小进行计费，不通规格的 NAS 计费单价不一致，请参考相关文档。
-
-如果您曾经在当前 NAS 中使用过 Stable Diffusion 应用，可以考虑将远端目录设置为 `/fc-stable-diffusion-plus`，本地目录设置为 `/mnt/auto`
-
-![](https://img.alicdn.com/imgextra/i3/O1CN01JM4qq427roSToC5GI_!!6000000007851-0-tps-1424-1061.jpg)
-
-挂载完毕后，关闭所有 ComfyUI 静置几分钟（如果之前未开启 ComfyUI 页面可跳过），访问 ComfyUI 地址，等待进入页面。
-首次挂载 NAS 需要进行文件链接操作，这可能会花费几分钟时间，如果页面加载失败可以刷新一次（挂载耗时太久导致启动超时，通常重试一次即可）
-
-### 进入终端、上传文件
-
-函数计算支持登入运行中的函数实例
-![](https://img.alicdn.com/imgextra/i2/O1CN01p2zERS21sNFaFIFlK_!!6000000007040-0-tps-1522-846.jpg)
-
-您可以在终端中执行需要的操作（如手动安装自定义节点、依赖等）
+函数计算支持登入运行中的函数实例，您可以在终端中执行需要的操作（如手动安装自定义节点、依赖等）
 
 注意，在 Serverless 环境下，您的所有改动都不会真正保存，您需要将改动的文件放置在 NAS 中以持久化
 
-如果您希望上传本地的模型文件，可以使用 NAS 文件浏览器功能
+![](https://img.alicdn.com/imgextra/i2/O1CN01p2zERS21sNFaFIFlK_!!6000000007040-0-tps-1522-846.jpg)
+
+
+### 文件上传及下载
+
+借助 NAS 文件浏览器功能，您可以方便地进行云上文件管理
 
 ![](https://img.alicdn.com/imgextra/i1/O1CN01qBoRgE1Us1czB7Doi_!!6000000002572-0-tps-1533-574.jpg)
 
 
 ### 安装自定义节点
 
-以安装中文翻译 [AIGODLIKE-COMFYUI-TRANSLATION](https://github.com/AIGODLIKE/AIGODLIKE-COMFYUI-TRANSLATION) 为例
+以安装中文翻译插件 [AIGODLIKE-COMFYUI-TRANSLATION](https://github.com/AIGODLIKE/AIGODLIKE-COMFYUI-TRANSLATION) 为例，使用 ComfyUI-Manager 进行安装。
 
-首先 [挂载 NAS 并使用自定义节点和模型](#mount_nas)
-
-使用 ComfyUI-Manager 进行安装，
 ![](https://img.alicdn.com/imgextra/i1/O1CN01cpHWUJ1WQfCKAZoVB_!!6000000002783-0-tps-1339-893.jpg)
 
 搜索要安装的节点名称，点击 install
+
 ![](https://img.alicdn.com/imgextra/i2/O1CN014lNLJe1lebUP6PYxn_!!6000000004844-0-tps-1368-270.jpg)
 
 **注意**
 - 安装过程中请不要关闭页面。安装完成后，除去需要点击 restart 外，还需要刷新页面
 - 安装过程中可能会访问 Github、HuggingFace 等境外网站，由于网络问题可能会导致访问较慢或失败，您可以在网络上检索如何解决类似的问题。 )
 
-安装完成后，在设置修改语言即可
-![](https://img.alicdn.com/imgextra/i3/O1CN017lGKCE22e0RIZb8UN_!!6000000007144-0-tps-1193-1014.jpg)
+### 加速依赖下载
 
-翻译插件提供的中文仅供参考，为了避免在与其他人交流时存在偏差，建议在交流关键信息时使用原本的英文单词
-
-### 使用国内 pypi 镜像，加速依赖下载
-
-首先，登陆进入实例或进入文件管理器
-在 `/mnt/auto/comfyui/root/.pip/pip.conf`
+使用国内 pypi 镜像加速依赖下载。编辑 `/mnt/auto/comfyui/root/.pip/pip.conf` 文件，设置镜像源为阿里云。
 
 ```
 [global]
@@ -169,25 +149,16 @@ index-url = http://mirrors.aliyun.com/pypi/simple/
 trusted-host = https://mirrors.aliyun.com
 ```
 
+### 解决缺失节点的问题
 
-### 使用别人提供的工作流时，安装缺失的节点
-
-网络上的工作流往往使用了大量自定义节点，展现在页面上就是满屏红色的报错，这时我们需要根据需要安装缺失的第三方节点
+导入第三方的工作流，可能会遇到节点不存在的报错，可以借助 ComfyUI Manager 安装缺失的节点
 
 ![](https://img.alicdn.com/imgextra/i4/O1CN015Ovmyr1VPSXWcUvit_!!6000000002645-0-tps-840-442.jpg)
 
-
-ComfyUI 管理器插件，可以一键安装缺失的 custom nodes
 ![](https://img.alicdn.com/imgextra/i2/O1CN01aSPkBh22XatVsvQrX_!!6000000007130-0-tps-1363-886.jpg)
 
-**注意**
-- 安装过程中请不要关闭页面。安装完成后，除去需要点击 restart 外，还需要刷新页面
-- 安装过程中可能会访问 Github、HuggingFace 等境外网站，由于网络问题可能会导致访问较慢或失败，您可以在网络上检索如何解决类似的问题。 )
 
-
-### 为什么安装了一些缺失节点仍然报错？
-
-可以参考相关的讨论 https://comfyui-guides.runcomfy.com/ultimate-comfyui-how-tos-a-runcomfy-guide/how-to-fix-a-red-node-for-ipadapterapply
+部分节点升级后，可能仍然提示未安装，可参考 [ComfyUI Guides](https://comfyui-guides.runcomfy.com/) 的相关讨论解决。
 
 > How to fix: A red node for “IPAdapterApply”?
 > You must already follow our instructions on how to install IP-Adapter V2, and it should all working properly. Now you see a red node for “IPAdapterApply”.
@@ -195,13 +166,13 @@ ComfyUI 管理器插件，可以一键安装缺失的 custom nodes
 > That is because you are working on a workflow with IPAdapter V1 node, simply just replace the V1 node with the V2 ones or uninstall IPA v2 and rollback to V1 if you feel like it.
 
 
-### 与 ControlNet 结合
+### ControlNet 的使用
 
-同样的文生图，直接输出和结合 ControlNet 输出对比
+展示了使用 ControlNet 对比直接输出的差异，提供了工作流 JSON 示例以及对应模型的下载说明。
 
 ![](https://img.alicdn.com/imgextra/i4/O1CN01R8bT461O1STVjkkfy_!!6000000001645-0-tps-2090-1062.jpg)
 
-工作流如下，请自行下载需要的模型
+<details><summary>工作流文件</summary>
 
 ```json
 {
@@ -433,25 +404,26 @@ ComfyUI 管理器插件，可以一键安装缺失的 custom nodes
 }
 ```
 
+</details>
+
+
 </usedetail>
 
 ## 注意事项
 
 <matters id="flushContent">
 
-fc-comfyui（后简称“本工具”）旨在帮助用户将 ComfyUI 开源项目部署至阿里云函数计算服务。本工具为独立开发的第三方工具，与 ComfyUI 项目以及阿里云官方无直接关联。
-本工具可能链接到第三方网站或服务，这些链接仅为方便用户而提供。工具开发者对这些第三方网站或服务的内容、隐私政策或操作不承担任何责任，且不表示对这些网站或服务的认可。
-- ComfyUI 为开源社区较为活跃，更新频繁且功能丰富，本工具在部署时会尽量保持与社区代码一致，请自行鉴别社区代码的可靠性与稳定性；
-- 在阿里云运行 ComfyUI 会产生一定的费用，请参考相关产品的计费文档；
-- fc-comfyui 会帮您将 ComfyUI 部署至 函数计算 FC，如果您需要对文件（模型、第三方节点）进行持久化存储，还需要开通 文件管理 NAS，这可能会产生额外的费用；
-- ComfyUI 项目的使用受其开源许可协议的约束。在使用本工具之前，请确保你已经阅读并理解了 ComfyUI 项目的许可协议，以及任何相关的第三方库或工具的许可协议；
-- 将 ComfyUI 项目部署至阿里云函数计算服务，需遵守阿里云的服务条款和使用政策。请在使用本工具之前，确保你已经了解并同意阿里云的相关条款；
-- 本工具按“现状”提供，不提供任何形式的明示或暗示担保，包括但不限于适销性、特定用途的适用性和不侵权的担保；
-- 用户明确同意使用本工具所承担的全部风险。开发者不承担因使用或无法使用本工具所引起的任何直接、间接、偶然、特殊或后果性的损害责任；
-- ComfyUI 打开页面会建立长连接请求，也即会 <span style="color:red">**持续消耗计算资源**</span>，为了避免不必要的费用产生，不使用时请 **关闭所有页面**
+fc-comfyui 是一个第三方工具，旨在帮助用户将 ComfyUI 项目部署到阿里云函数计算服务。请注意，该工具与 ComfyUI 项目及阿里云官方无直接联系。
 
+- **第三方链接**：本工具提供的第三方网站或服务链接仅为用户方便，开发者对这些内容、隐私政策或操作不承担责任，亦不代表认可。
+- **社区同步**：ComfyUI 为活跃的开源社区项目，功能丰富且更新频繁，如果您希望使用更新版本的 ComfyUI，可自行基于 Dockerfile 文件进行构建。
+- **费用提示**：在阿里云部署 ComfyUI 可能产生费用，请参考阿里云的计费文档。若需持久化存储（如模型、节点），还需开通文件管理 NAS，可能产生额外费用。
+- **许可协议**：使用 ComfyUI 项目需遵守其开源许可协议。使用前，请确保已阅读并理解 ComfyUI 项目及相关第三方工具的许可协议。
+- **遵守服务条款**：部署至阿里云函数计算服务，需同意阿里云服务条款和使用政策。
+- **无担保声明**：本工具“按现状”提供，不包含任何形式的担保。使用风险由用户自担，开发者不负责任何直接或间接损害。
+- **资源消耗**：ComfyUI 页面建立长连接请求，<span style="color:red">**持续消耗计算资源**</span>。为避免不必要费用，请不使用时关闭所有页面。
 
-使用本工具即表示你理解并同意本免责声明的条款。如果你不同意本免责声明的任何部分，请不要使用本工具。
+使用本工具即表示您已理解并同意以上声明。若不同意，请勿使用。
 
 </matters>
 
