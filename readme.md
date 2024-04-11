@@ -72,20 +72,19 @@
 
 <appdetail id="flushContent">
 
-本案例展示了如何将 ComfyUI 部署到阿里云函数计算上，从而在云端实现文生图和图生图等 AIGC 创作活动。
+本案例展示了如何将开源项目 [ComfyUI](https://github.com/comfyanonymous/ComfyUI) 部署到阿里云函数计算上，从而实现 ComfyUI 云端快速部署，实现文生图和图生图等 AIGC 创作活动。
 
 ComfyUI 是一个为 Stable Diffusion 模型设计的，功能强大且高度模块化的图形用户界面（GUI）。它允许用户基于节点构建 AIGC 创作流程，非常适合那些想要摆脱传统编程方法、采用更直观操作流程的用户。该工具由 Comfyanonymous 在 2023 年 1 月创建，初衷是深入了解 Stable Diffusion 模型的运作机制。由于其易用性，Stable Diffusion 的开发者 Stability AI 也采用了 ComfyUI 进行内部测试，并聘请 Comfyanonymous 协助开发内部工具。目前，ComfyUI 在 Github 上的 Fork 数超过 3000，Star 数超过 30000。
 
 Stable Diffusion 是一款由 CompVis、Stability AI 和 LAION 的研究人员及工程师共同开发的开源扩散模型，凭借其开源和高扩展性特点，赢得了全球众多 AIGC 爱好者的支持。据 Civital 模型网站统计，目前最热门的模型下载次数已超过 100 万，有超过 70 个模型下载次数超过 10 万，提供各种风格和功能的模型总数超过 12 万。
 
-在国内，ComfyUI 也受到广泛欢迎。通过 ComfyUI 创作文生图的教程已多次在各大平台热搜榜和排行榜上出现，掀起一阵又一阵的热潮。
+在国内，ComfyUI 也受到广泛欢迎。通过 ComfyUI 创作文生图的教程已多次在各大平台热搜榜和排行榜上出现，掀起一阵又一阵的热潮。通过 Serverless 开发平台，您只需要几步，就可以体验Comfyui，并享受Serverless 架构带来的降本提效的技术红利。
 
 </appdetail>
 
 ## 使用流程
 
 <usedetail id="flushContent">
-
 
 ### 基本文生图
 
@@ -405,7 +404,6 @@ trusted-host = https://mirrors.aliyun.com
 ```
 
 </details>
-
 
 </usedetail>
 
