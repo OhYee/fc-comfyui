@@ -1,0 +1,273 @@
+#!/bin/bash
+
+. "$(dirname "$(readlink -f "$0")")/scripts/core.bash"
+
+REGIONS="cn-hangzhou cn-shanghai ap-northeast-1" # 要推送镜像的地域
+DEFAULT_REGION=$(echo $REGIONS | awk '{print $1}') # 默认地域
+
+# 镜像基本信息
+NAMESPACE=ohyee
+REPO=fc-demo
+TAGS="SD LITE CLAY" # 镜像类型列表
+
+LITE_TAG="fc-comfyui-lite"
+LITE_VERSIONS="v1 v2"
+
+SD_TAG="fc-comfyui-sd1.5"
+SD_VERSIONS="v1 v2"
+
+CLAY_TAG="fc-comfyui-clay"
+CLAY_VERSIONS="v1"
+
+
+function image_tag() {
+    local id=$1
+    local version=$2
+    echo "$(eval echo "\$${id}_TAG")-${version}"
+}
+
+function image_tag_latest() {
+    local id=$1
+    local versions=($(eval echo "\$${id}_VERSIONS"))
+    image_tag $id ${versions[-1]}
+}
+
+function image_name() {
+    local tag=$1
+    echo "$NAMESPACE/$REPO:${tag}"
+}
+
+function image_full() {
+    local tag=$1
+    local region=$2
+    echo "registry.$region.aliyuncs.com/$(image_name $tag)"
+}
+
+# ==================== #
+# = 镜像 构建 & 推送 = #
+# ==================== #
+
+function build_image() { ## 构建镜像
+    set_debug_trace
+
+    local image_id=$1 # 参数 1：要构建的镜像 id
+    local version=$2 # 参数 2：要构建的镜像版本
+    local extra_args=""
+    local image="$(image_name $(image_tag "${image_id}" "$version"))"
+    local docker_context="src/images/base"
+    local sources=$(find "${docker_context}/${version}" -type f)
+    local dockerfile="${docker_context}/${version}/Dockerfile"
+   
+    
+    case "$version" in
+        v2) # v2 版本需要设置 v1 版本的基础镜像
+            extra_args="--build-arg BASE_IMAGE=$(image_full $(image_tag $image_id "v1") ${DEFAULT_REGION})"
+            ;;
+    esac
+
+    case "$image_id" in
+        CLAY) # 指定 clay 的 dockerfile
+            docker_context="src/images"
+            dockerfile="src/images/clay/${version}/Dockerfile"
+            sources="$(find "src/images/clay/$version" -type f)"
+            ;;
+    esac
+
+    if [ -n "$(need_build_docker $image $sources)" ]; then
+        debug "build image ${image} from ${dockerfile} at ${docker_context} with ${extra_args}"
+
+        DOCKER_BUILDKIT=1 docker build \
+            -f "${dockerfile}" \
+            -t "${image}" \
+            --build-arg IMAGE_TAG="$(basename ${image} | cut -f2 -d:)" \
+            ${extra_args} \
+            "${docker_context}"
+    fi
+
+    _RETURN="$image"
+
+    clear_debug_trace
+}
+
+function push_image() { ## 推送镜像
+    set_debug_trace
+
+    local image="$1" # 镜像名
+    local region="$2" # 要推送的地狱
+    local full="registry.${region}.aliyuncs.com/${image}"
+
+    debug "push $image to $region\nimage: ${full}"
+    docker tag "${image}" "${full}" 
+
+    echo -e "\npush image: $full\n"
+    docker push "${full}"
+
+    clear_debug_trace
+}
+
+function init_images() {
+    for id in $TAGS; do
+        versions=($(eval echo "\$${id}_VERSIONS"))
+        id_lower=$(echo $id | tr '[:upper:]' '[:lower:]' )
+        latestVersion=${versions[-1]}
+
+        add_help "build-${id_lower}" "构建 ${id_lower} 最新镜像($latestVersion)"
+        eval "
+        function cmd_build-${id_lower}() {
+            set_debug_trace
+            cmd_build-${id_lower}-${latestVersion}
+            clear_debug_trace
+        }
+        "
+
+        for version in "${versions[@]}"; do
+            add_help "build-${id_lower}-${version}" "构建 ${id_lower} ${version} 镜像"
+            eval "
+            function cmd_build-${id_lower}-${version}() {
+                set_debug_trace
+                build_image ${id} ${version}
+                clear_debug_trace
+            }
+            "
+        done
+
+
+        add_help "push-${id_lower}" "推送 ${id_lower} 镜像到镜像仓库"
+        eval "
+        function cmd_push-${id_lower}() {
+            set_debug_trace
+
+            cmd_build-${id_lower}
+
+            for region in $REGIONS; do
+                push_image $(image_name $(image_tag ${id} ${latestVersion})) \${region}
+            done 
+
+            clear_debug_trace
+        }
+        "
+    done
+
+    for region in $REGIONS; do ## 动态创建推送到地域
+        add_help "push-$region" "推送基础镜像到 $region"
+
+        eval "function cmd_push-$region() { 
+            set_debug_trace
+
+            for image in $TAGS; do
+                # 先构建镜像
+                cmd_build-\$(echo \${image} | tr '[:upper:]' '[:lower:]')
+
+                # 再推送镜像
+                push_image \$(image_name \$(image_tag_latest \$image)) $region
+            done
+
+            clear_debug_trace
+        } 
+        ";
+    done
+}
+
+function cmd_build() { ## 构建所有镜像
+    set_debug_trace
+
+    for id in $TAGS; do
+        id_lower=$(echo $id | tr '[:upper:]' '[:lower:]' )
+        cmd_build-${id_lower}
+    done
+
+    clear_debug_trace
+}
+
+function cmd_push() { ## 推送所有镜像
+    set_debug_trace
+
+    for region in $REGIONS; do
+        cmd_push-$region
+    done
+
+    clear_debug_trace
+}
+
+function cmd_start() { ## 使用 sd1.5 进行测试
+    set_debug_trace
+
+    cmd_build-sd
+    local image="${_RETURN}"
+
+	docker run --rm -it --gpus=all --name=comfyui --net=host \
+		-v $(pwd)/nas:/mnt/auto \
+		${image}
+
+    clear_debug_trace
+}
+
+function cmd_start-lite() { ## 使用 lite 进行测试
+    set_debug_trace
+
+    cmd_build_lite
+    local image="${_RETURN}"
+
+	docker run --rm -it --gpus=all --name=comfyui --net=host \
+		-v ${shell pwd}/nas:/mnt/auto \
+		${image}
+
+    clear_debug_trace
+}
+
+function cmd_start-clay() { ## 使用黏土镜像进行测试(不挂载 nas)
+    set_debug_trace
+
+    cmd_build-clay
+    local image="${_RETURN}"
+
+	docker run --rm -it --gpus=all --name=comfyui --net=host \
+		${image}
+
+    clear_debug_trace
+}
+
+function cmd_start-without-nas() { ## 使用 sd1.5 进行测试，不挂载 nas
+    set_debug_trace
+
+    cmd_build-sd
+    local image="${_RETURN}"
+
+	docker run --rm -it --gpus=all --name=comfyui --net=host \
+		${image}
+
+    clear_debug_trace
+}
+
+function cmd_shell() { ## 登入 comfyui shell 环境
+    set_debug_trace
+
+    cmd_build-sd
+    local image="${_RETURN}"
+
+	docker run --rm -it --gpus=all --name=comfyui --net=host \
+		--entrypoint="/bin/bash" \
+		-v $(pwd)/nas:/mnt/auto \
+		$image
+
+    clear_debug_trace
+}
+
+function cmd_exec() { ## 登入容器实例
+    set_debug_trace
+
+    docker exec -it comfyui /bin/bash
+
+    clear_debug_trace
+}
+	
+function cmd_registry() { ## 发布到 registry
+    set_debug_trace
+
+    s registry publish
+
+    clear_debug_trace
+}
+
+
+main $@
