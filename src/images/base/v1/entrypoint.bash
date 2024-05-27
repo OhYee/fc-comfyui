@@ -57,8 +57,6 @@ if [ "$NAS_MOUNTED" == "0" ]; then
 else
   echo "with NAS"
 
-
-
   IMAGE_TAG_I=$(cat /IMAGE_TAG)
   IMAGE_TAG_N=$(cat ${NAS_DIR}/IMAGE_TAG 2>/dev/null || echo '') 
 

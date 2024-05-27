@@ -25,7 +25,7 @@ function mount_all_files() {
   # 挂载目录所有文件逐个到指定目录
   local SRC=$1
   local DST=$2
-  find $SRC ! -type d -printf "%P\n" | xargs -I {} bash -c "mount_file_if_not_exist ${SRC}/{} ${DST}/{}"
+  find $SRC ! -type d -printf "%P\n" | xargs -I {} bash -c "mount_file_if_not_exist '${SRC}/{}' '${DST}/{}'"
 }
 
 function copy_file_if_not_exist() {
@@ -41,7 +41,11 @@ function copy_file_if_not_exist() {
 
 export -f mount_file_if_not_exist mount_folder_files copy_file_if_not_exist mount_all_files
 
+ 
 # 处理 venv 虚拟环境
+
+grep -r "/venv" /venv/bin/* | awk -F: "{print \$1}" | xargs -I {} sed "s@${NAS_DIR}/venv@/venv@g" -i {} # 先尝试将 venv 切回到默认位置
+
 mount_file_if_not_exist /venv/bin ${VIRTUAL_NAS}/venv/bin
 mount_file_if_not_exist /venv/include ${VIRTUAL_NAS}/venv/include
 mount_file_if_not_exist /venv/pyvenv.cfg ${VIRTUAL_NAS}/venv/pyvenv.cfg
@@ -50,9 +54,7 @@ mount_folder_files /venv/lib/python3.10/site-packages ${VIRTUAL_NAS}/venv/lib/py
 mount_folder_files /venv/lib64/python3.10/site-packages ${VIRTUAL_NAS}/venv/lib64/python3.10/site-packages
 export VIRTUAL_ENV="${NAS_DIR}/venv"
 export PATH="${VIRTUAL_ENV}/bin:$PATH"
-echo "ep"/etc/profile
 grep -r "/venv" /venv/bin/* | awk -F: '{print $1}' | xargs -I {} sed "s@/venv@${VIRTUAL_ENV}@" -i {}
-
 echo "export VIRTUAL_ENV=${VIRTUAL_ENV}" >> /etc/profile
 echo "export PATH=${PATH}" >> /etc/profile
 
@@ -63,14 +65,18 @@ mount_folder_files ${BUILTIN}/custom_nodes ${VIRTUAL_NAS}/custom_nodes
 rm -rf ${COMFYUI}/custom_nodes
 
 # 映射模型文件 builtin => nas
-rsync -a --ignore-existing ${COMFYUI}/models/* ${VIRTUAL_NAS}/models
-rm -rf ${COMFYUI}/models
-if [ -e ${BUILTIN}/models ]; then 
-  mount_all_files "${BUILTIN}/models" "${VIRTUAL_NAS}/models"
+if [ -e "${COMFYUI}/models" ]; then
+    rsync -a --ignore-existing ${COMFYUI}/models/* ${VIRTUAL_NAS}/models
+    rm -rf ${COMFYUI}/models
 fi
 
-# 映射 input 文件 builtin => nas
-mount_folder_files ${COMFYUI}/input ${VIRTUAL_NAS}/input
+if [ -e ${BUILTIN}/models ]; then 
+    mount_all_files "${BUILTIN}/models" "${VIRTUAL_NAS}/models"
+fi
+
+# 映射 input 文件 comfyui => nas builtin => nas
+if [ -e "${COMFYUI}/input" ]; then mount_folder_files ${COMFYUI}/input ${VIRTUAL_NAS}/input; fi
+if [ -e "${BUILTIN}/input" ]; then mount_folder_files ${BUILTIN}/input ${VIRTUAL_NAS}/input; fi
 
 # 初始化额外模型文件 nas => comfyui
 copy_file_if_not_exist "/docker/built-in/extra_model_paths.yaml" "${VIRTUAL_NAS}/extra_model_paths.yaml"
