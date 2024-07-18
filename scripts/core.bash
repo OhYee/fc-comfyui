@@ -123,7 +123,7 @@ function need_build_docker() { ## 根据 docker 镜像日期判断是否需要�
 
     for source_file in "${source_files[@]}"; do
         local file_ts="$(stat ${source_file} | awk '/Modify/ {for(i=2;i<=NF;i=i+1)printf "%s ", $i;}' | xargs -I {} date -d {} +%s)"
-        debug "file__ts: ${file_ts}"
+        debug "file__ts: ${file_ts} ${source_file}"
 
         if [ "${image_ts}" -lt "${file_ts}" ]; then \
             debug "source file $target_file was modified, should build"

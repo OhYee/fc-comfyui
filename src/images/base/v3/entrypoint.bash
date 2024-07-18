@@ -97,6 +97,6 @@ cd ${NAS_DIR}
 if [ -z "${USE_AGENT:-}" ]; then
   python3 ${COMFYUI}/main.py ${ARGS}
 else
-  /docker/agent python3 ${COMFYUI}/main.py $(echo ${ARGS} | sed "s/--port 9000/--port 9001/g")
+  /agent python3 ${COMFYUI}/main.py $(echo ${ARGS} | sed "s/--port 9000/--port 9001/g")
 fi 
 

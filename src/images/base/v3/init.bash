@@ -52,6 +52,7 @@ mount_file_if_not_exist /venv/pyvenv.cfg ${VIRTUAL_NAS}/venv/pyvenv.cfg
 mount_file_if_not_exist /venv/include ${VIRTUAL_NAS}/venv/include
 mount_folder_files /venv/lib/python3.10/site-packages ${VIRTUAL_NAS}/venv/lib/python3.10/site-packages
 mount_folder_files /venv/lib64/python3.10/site-packages ${VIRTUAL_NAS}/venv/lib64/python3.10/site-packages
+find -L ${VIRTUAL_NAS}/venv/lib/python3.10 -type l -delete
 export VIRTUAL_ENV="${NAS_DIR}/venv"
 export PATH="${VIRTUAL_ENV}/bin:$PATH"
 grep -r "/venv" /venv/bin/* | awk -F: '{print $1}' | xargs -I {} sed "s@/venv@${VIRTUAL_ENV}@" -i {}
@@ -85,6 +86,8 @@ copy_file_if_not_exist "/docker/built-in/extra_model_paths.yaml" "${VIRTUAL_NAS}
 # 复制内置文件
 cp /docker/entrypoint.bash /entrypoint.bash
 chmod a+x /entrypoint.bash
+if [ -f "/mnt/agent" ] && [ ! -f "/agent" ]; then cp /mnt/agent /agent ; fi
+
 
 # 写入镜像版本
 IMAGE_TAG="${IMAGE_TAG:-$(date +%y%m%d%H%M%S)}" && echo "${IMAGE_TAG}" > /IMAGE_TAG
