@@ -8,7 +8,7 @@ DEFAULT_REGION=$(echo $REGIONS | awk '{print $1}') # 默认地域
 # 镜像基本信息
 NAMESPACE=ohyee
 REPO=fc-demo
-TAGS="SD LITE CLAY COUPLEPHOTO" # 镜像类型列表
+TAGS="SD LITE CLAY COUPLEPHOTO ICE" # 镜像类型列表
 
 LITE_TAG="fc-comfyui-lite"
 LITE_VERSIONS="v1 v2 v3"
@@ -22,6 +22,8 @@ CLAY_VERSIONS="v1 v2"
 COUPLEPHOTO_TAG="fc-comfyui-couplephoto"
 COUPLEPHOTO_VERSIONS="v1"
 
+ICE_TAG="fc-comfyui-ice"
+ICE_VERSIONS="v1"
 
 function image_tag() {
     local id=$1
@@ -78,6 +80,11 @@ function build_image() { ## 构建镜像
             docker_context="src/images"
             dockerfile="src/images/couple_photo/${version}/Dockerfile"
             sources="$(find "src/images/couple_photo/$version" -type f)"
+            ;;
+        ICE) # 冰冻
+            docker_context="src/images"
+            dockerfile="src/images/ice/${version}/Dockerfile"
+            sources="$(find "src/images/ice/$version" -type f)"
             ;;
     esac
 
