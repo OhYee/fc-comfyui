@@ -3,7 +3,7 @@ Type: Project
 Name: fc-comfyui
 Provider:
   - 阿里云 
-Version: 0.0.5
+Version: dev 
 Description: 部署 ComfyUI 到阿里云函数计算
 HomePage: https://github.com/OhYee/fc-comfyui
 Tags: 
@@ -39,10 +39,11 @@ Parameters:
     type:
       title: 内置模型
       type: string
-      default: 冰冻一切
+      default: flux
       description: 内置的模型选择
       enum:
         - sd1.5
         - 纯净版
         - 黏土风格
         - 冰冻一切
+        - flux

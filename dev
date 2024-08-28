@@ -8,13 +8,13 @@ DEFAULT_REGION=$(echo $REGIONS | awk '{print $1}') # 默认地域
 # 镜像基本信息
 NAMESPACE=ohyee
 REPO=fc-demo
-TAGS="SD LITE CLAY COUPLEPHOTO ICE" # 镜像类型列表
+TAGS="SD LITE CLAY COUPLEPHOTO ICE FLUX" # 镜像类型列表
 
 LITE_TAG="fc-comfyui-lite"
-LITE_VERSIONS="v1 v2 v3"
+LITE_VERSIONS="v1 v2 v3 v4"
 
 SD_TAG="fc-comfyui-sd1.5"
-SD_VERSIONS="v1 v2 v3"
+SD_VERSIONS="v1 v2 v3 v4"
 
 CLAY_TAG="fc-comfyui-clay"
 CLAY_VERSIONS="v1 v2"
@@ -24,6 +24,9 @@ COUPLEPHOTO_VERSIONS="v1"
 
 ICE_TAG="fc-comfyui-ice"
 ICE_VERSIONS="v1"
+
+FLUX_TAG="fc-comfyui-flux"
+FLUX_VERSIONS="v1"
 
 function image_tag() {
     local id=$1
@@ -85,6 +88,13 @@ function build_image() { ## 构建镜像
             docker_context="src/images"
             dockerfile="src/images/ice/${version}/Dockerfile"
             sources="$(find "src/images/ice/$version" -type f)"
+            ;;
+        LITE) # 轻量版
+            extra_args="--target lite"
+            ;;
+        FLUX) #
+            dockerfile="src/images/flux/${version}/Dockerfile"
+            sources="$(find "src/images/flux/$version" -type f)"
             ;;
     esac
 
