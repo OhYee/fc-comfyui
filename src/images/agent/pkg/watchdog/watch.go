@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"os/exec"
 	"strings"
 	"sync"
@@ -61,22 +60,36 @@ func (w *WatchDog) init() {
 	}
 }
 
-// CheckPort 检查端口是否可用
+// // CheckPort 检查端口是否可用
+// func (w *WatchDog) CheckPort() bool {
+// 	if w.Port == 0 {
+// 		log.Errorf("watchdog port is not set")
+// 		return false
+// 	}
+
+// 	conn, err := net.DialTimeout(
+// 		"tcp",
+// 		fmt.Sprintf("localhost:%d", w.Port),
+// 		5*time.Second,
+// 	)
+// 	if err != nil {
+// 		log.Debugf("check port error, %s", err)
+// 		return false
+// 	}
+// 	defer conn.Close()
+
+// 	return true
+// }
+
 func (w *WatchDog) CheckPort() bool {
-	if w.Port == 0 {
-		log.Errorf("watchdog port is not set")
-		return false
-	}
-
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", w.Port),
-		time.Duration(100)*time.Millisecond)
+	sockfd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
 	if err != nil {
-		log.Debugf("check port error, %s", err)
 		return false
 	}
-	defer conn.Close()
+	defer syscall.Close(sockfd)
 
-	return true
+	err = syscall.Bind(sockfd, &syscall.SockaddrInet4{Port: w.Port})
+	return err != nil // 监听失败则说明端口正在被使用
 }
 
 func (w *WatchDog) checkHealthLoop() {
@@ -112,7 +125,7 @@ func (w *WatchDog) checkHealthLoop() {
 				retry := 5
 				shouldRestart := true
 				for retry > 0 {
-					log.Debugf("port is not available, waiting...")
+					log.Infof("port is not available, waiting...")
 					retry--
 					time.Sleep(time.Duration(config.WatchDogIntervalMs) * time.Millisecond)
 					if w.CheckPort() {
@@ -122,7 +135,7 @@ func (w *WatchDog) checkHealthLoop() {
 				}
 
 				if shouldRestart {
-					log.Debugf("port is not available, try to restart")
+					log.Infof("port is not available, try to restart")
 
 					// 重试两次仍然未启动，重新拉起程序
 					if err := w.Start(); err != nil {

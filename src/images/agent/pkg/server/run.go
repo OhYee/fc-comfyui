@@ -200,6 +200,26 @@ func runComfyUI(clientID string, taskID string, prompt *comfyui.TPrompt, callbac
 		return progress, err
 	}
 
+	for i, p := range progress {
+		if p.Images != nil && len(p.Images) > 0 {
+			images := make([]string, 0, len(p.Images))
+			for _, img := range p.Images {
+				resp, err := http.Get(fmt.Sprintf("http://%s/view?filename=%s&type=%s&subfolder=%s&rand=%v", config.ComfyUIHost, img.Filename, img.Type, img.SubFolder, rand.Float64()))
+				if err == nil {
+					b, err := io.ReadAll(resp.Body)
+					if err == nil {
+						images = append(images, base64.RawStdEncoding.EncodeToString(b))
+					} else {
+						log.Errorf("read output image error, %s", err)
+					}
+				}
+			}
+
+			p.Results = images
+			progress[i] = p
+		}
+	}
+
 	return progress, nil
 }
 
@@ -284,26 +304,6 @@ func RunComfyUIWebsocket(w http.ResponseWriter, r *http.Request) {
 			Data: err.Error(),
 		})
 		return
-	}
-
-	for i, p := range progress {
-		if p.Images != nil && len(p.Images) > 0 {
-			images := make([]string, 0, len(p.Images))
-			for _, img := range p.Images {
-				resp, err := http.Get(fmt.Sprintf("http://%s/view?filename=%s&type=%s&subfolder=%s&rand=%v", config.ComfyUIHost, img.Filename, img.Type, img.SubFolder, rand.Float64()))
-				if err == nil {
-					b, err := io.ReadAll(resp.Body)
-					if err == nil {
-						images = append(images, base64.RawStdEncoding.EncodeToString(b))
-					} else {
-						log.Errorf("read output image error, %s", err)
-					}
-				}
-			}
-
-			p.Results = images
-			progress[i] = p
-		}
 	}
 
 	if err := conn.WriteJSON(websocketMessage{
