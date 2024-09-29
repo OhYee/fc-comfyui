@@ -11,7 +11,7 @@ REPO=fc-demo
 TAGS="SD LITE CLAY COUPLEPHOTO ICE" # 镜像类型列表
 
 LITE_TAG="fc-comfyui-lite"
-LITE_VERSIONS="v1 v2 v3"
+LITE_VERSIONS="v1 v2 v3 v4"
 
 SD_TAG="fc-comfyui-sd1.5"
 SD_VERSIONS="v1 v2 v3"
