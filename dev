@@ -130,68 +130,68 @@ function push_image() { ## 推送镜像
     clear_debug_trace
 }
 
-function init_images() {
-    for id in $TAGS; do
-        versions=($(eval echo "\$${id}_VERSIONS"))
-        id_lower=$(echo $id | tr '[:upper:]' '[:lower:]' )
-        latestVersion=${versions[-1]}
+# function init_images() {
+#     for id in $TAGS; do
+#         versions=($(eval echo "\$${id}_VERSIONS"))
+#         id_lower=$(echo $id | tr '[:upper:]' '[:lower:]' )
+#         latestVersion=${versions[-1]}
 
-        add_help "build-${id_lower}" "构建 ${id_lower} 最新镜像($latestVersion)"
-        eval "
-        function cmd_build-${id_lower}() {
-            set_debug_trace
-            cmd_build-${id_lower}-${latestVersion}
-            clear_debug_trace
-        }
-        "
+#         add_help "build-${id_lower}" "构建 ${id_lower} 最新镜像($latestVersion)"
+#         eval "
+#         function cmd_build-${id_lower}() {
+#             set_debug_trace
+#             cmd_build-${id_lower}-${latestVersion}
+#             clear_debug_trace
+#         }
+#         "
 
-        for version in "${versions[@]}"; do
-            add_help "build-${id_lower}-${version}" "构建 ${id_lower} ${version} 镜像"
-            eval "
-            function cmd_build-${id_lower}-${version}() {
-                set_debug_trace
-                build_image ${id} ${version}
-                clear_debug_trace
-            }
-            "
-        done
+#         for version in "${versions[@]}"; do
+#             add_help "build-${id_lower}-${version}" "构建 ${id_lower} ${version} 镜像"
+#             eval "
+#             function cmd_build-${id_lower}-${version}() {
+#                 set_debug_trace
+#                 build_image ${id} ${version}
+#                 clear_debug_trace
+#             }
+#             "
+#         done
 
 
-        add_help "push-${id_lower}" "推送 ${id_lower} 镜像到镜像仓库"
-        eval "
-        function cmd_push-${id_lower}() {
-            set_debug_trace
+#         add_help "push-${id_lower}" "推送 ${id_lower} 镜像到镜像仓库"
+#         eval "
+#         function cmd_push-${id_lower}() {
+#             set_debug_trace
 
-            cmd_build-${id_lower}
+#             cmd_build-${id_lower}
 
-            for region in $REGIONS; do
-                push_image $(image_name $(image_tag ${id} ${latestVersion})) \${region}
-            done 
+#             for region in $REGIONS; do
+#                 push_image $(image_name $(image_tag ${id} ${latestVersion})) \${region}
+#             done 
 
-            clear_debug_trace
-        }
-        "
-    done
+#             clear_debug_trace
+#         }
+#         "
+#     done
 
-    for region in $REGIONS; do ## 动态创建推送到地域
-        add_help "push-$region" "推送基础镜像到 $region"
+#     for region in $REGIONS; do ## 动态创建推送到地域
+#         add_help "push-$region" "推送基础镜像到 $region"
 
-        eval "function cmd_push-$region() { 
-            set_debug_trace
+#         eval "function cmd_push-$region() { 
+#             set_debug_trace
 
-            for image in $TAGS; do
-                # 先构建镜像
-                cmd_build-\$(echo \${image} | tr '[:upper:]' '[:lower:]')
+#             for image in $TAGS; do
+#                 # 先构建镜像
+#                 cmd_build-\$(echo \${image} | tr '[:upper:]' '[:lower:]')
 
-                # 再推送镜像
-                push_image \$(image_name \$(image_tag_latest \$image)) $region
-            done
+#                 # 再推送镜像
+#                 push_image \$(image_name \$(image_tag_latest \$image)) $region
+#             done
 
-            clear_debug_trace
-        } 
-        ";
-    done
-}
+#             clear_debug_trace
+#         } 
+#         ";
+#     done
+# }
 
 function cmd_build() { ## 构建所有镜像
     set_debug_trace
