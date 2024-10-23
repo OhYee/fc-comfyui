@@ -289,6 +289,19 @@ func RunComfyUIWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go func() {
+		for {
+			data := new(struct {
+				Type string `json:"type"`
+			})
+			err := conn.ReadJSON(data)
+			if err != nil || data.Type == "close" {
+				conn.Close()
+				break
+			}
+		}
+	}()
+
 	clientID := uuid.NewString()
 	progress, err := runComfyUI(clientID, taskID, prompt, func(progress store.TProgress) {
 		if err = conn.WriteJSON(websocketMessage{

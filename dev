@@ -8,13 +8,13 @@ DEFAULT_REGION=$(echo $REGIONS | awk '{print $1}') # 默认地域
 # 镜像基本信息
 NAMESPACE=ohyee
 REPO=fc-demo
-TAGS="SD LITE CLAY COUPLEPHOTO ICE FLUX" # 镜像类型列表
+TAGS="SD LITE CLAY COUPLEPHOTO ICE FLUX LT BOARD FLUX_PULID" # 镜像类型列表
 
 LITE_TAG="fc-comfyui-lite"
-LITE_VERSIONS="v1 v2 v3 v4"
+LITE_VERSIONS="v1 v2 v3 v4 v5"
 
 SD_TAG="fc-comfyui-sd1.5"
-SD_VERSIONS="v1 v2 v3 v4"
+SD_VERSIONS="v1 v2 v3 v4 v5"
 
 CLAY_TAG="fc-comfyui-clay"
 CLAY_VERSIONS="v1 v2"
@@ -27,6 +27,12 @@ ICE_VERSIONS="v1"
 
 FLUX_TAG="fc-comfyui-flux"
 FLUX_VERSIONS="v1"
+
+FLUX_PULID_TAG="fc-comfyui-flux-pulid"
+FLUX_PULID_VERSIONS="v1"
+
+BOARD_TAG="fc-comfyui-board"
+BOARD_VERSIONS="v1 v2"
 
 function image_tag() {
     local id=$1
@@ -61,12 +67,14 @@ function build_image() { ## 构建镜像
     local image_id=$1 # 参数 1：要构建的镜像 id
     local version=$2 # 参数 2：要构建的镜像版本
     local extra_args=""
-    local image="$(image_name $(image_tag "${image_id}" "$version"))"
-    local docker_context="src/images"
-    local sources=$(find "${docker_context}/base/${version}" -type f)
-    local dockerfile="${docker_context}/base/${version}/Dockerfile"
-   
-    
+    local image="$(image_name $(image_tag "${image_id}" "${version}"))"
+    local docker_context="src/images"   
+    local id_lower=$(echo $image_id | tr '[:upper:]' '[:lower:]' )
+    local dockerfile="${docker_context}/${id_lower}/${version}/Dockerfile"
+    local sources=""
+
+    debug $image_id
+
     case "$version" in
         v2) # v2 版本需要设置 v1 版本的基础镜像
             extra_args="--build-arg BASE_IMAGE=$(image_full $(image_tag $image_id "v1") ${DEFAULT_REGION})"
@@ -74,31 +82,21 @@ function build_image() { ## 构建镜像
     esac
 
     case "$image_id" in
-        CLAY) # 指定 clay 的 dockerfile
-            docker_context="src/images"
-            dockerfile="src/images/clay/${version}/Dockerfile"
-            sources="$(find "src/images/clay/$version" -type f)"
+        SD)
+            sources=$(find "${docker_context}/base/${version}" -type f)
+            dockerfile="${docker_context}/base/${version}/Dockerfile"
+            extra_args="--target sd1.5"
             ;;
-        COUPLEPHOTO) # 指定合照
-            docker_context="src/images"
-            dockerfile="src/images/couple_photo/${version}/Dockerfile"
-            sources="$(find "src/images/couple_photo/$version" -type f)"
-            ;;
-        ICE) # 冰冻
-            docker_context="src/images"
-            dockerfile="src/images/ice/${version}/Dockerfile"
-            sources="$(find "src/images/ice/$version" -type f)"
-            ;;
-        LITE) # 轻量版
+        LITE)
+            sources=$(find "${docker_context}/base/${version}" -type f)
+            dockerfile="${docker_context}/base/${version}/Dockerfile"
             extra_args="--target lite"
             ;;
-        FLUX) #
-            dockerfile="src/images/flux/${version}/Dockerfile"
-            sources="$(find "src/images/flux/$version" -type f)"
-            ;;
+        *)
+            sources="$(find "${docker_context}/${id_lower}/${version}" -type f)"
     esac
 
-    sources+=" $(find "src/images/agent" -type f)"
+    sources+=" $(find "${docker_context}/agent" -type f)"
 
     if [ -n "$(need_build_docker $image $sources)" ]; then
         debug "build image ${image} from ${dockerfile} at ${docker_context} with ${extra_args}"
@@ -223,6 +221,7 @@ function cmd_start() { ## 使用 sd1.5 进行测试
     local image="${_RETURN}"
 
 	docker run --restart=always -it --gpus=all --name=comfyui --net=host \
+    -e USE_AGENT=1 \
 		-v $(pwd)/nas:/mnt/auto \
 		${image}
 
@@ -245,10 +244,13 @@ function cmd_start-lite() { ## 使用 lite 进行测试
 function cmd_start-clay() { ## 使用黏土镜像进行测试(不挂载 nas)
     set_debug_trace
 
-    cmd_build-clay
+    cmd_build-board
     local image="${_RETURN}"
 
 	docker run --rm -it --gpus=all --name=comfyui --net=host \
+        -e USE_AGENT=1 \
+        -e DEBUG=1 \
+        -v  $(pwd)/wildcardxXLANIMATION_wildcardxXLANIMATION.safetensors:/mnt/auto/comfyui/models/checkpoints/wildcardxXLANIMATION_wildcardxXLANIMATION.safetensors \
 		${image}
 
     clear_debug_trace
