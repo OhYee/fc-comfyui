@@ -67,6 +67,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt install -y \
     rsync vim git curl wget jq ffmpeg \
     gcc g++ unzip build-essential
+    libgl1-mesa-glx freeglut3-dev
 
 # 从依赖镜像获取所需的依赖文件，并映射至 /mnt/auto/comfyui
 RUN --mount=type=bind,from=deps,source=/venv,target=/comfyui_venv \
