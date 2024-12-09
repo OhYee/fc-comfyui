@@ -18,7 +18,8 @@ function add_help() { ## 增加一条帮助日志
 function cmd_help() { ## 显示帮助
     echo -e "帮助文档 \033[2m$0 $@\033[0m:"
     local tmp=""
-    tmp+=$(awk 'BEGIN { FS="\\(\\)\\s*{\\s*## |function cmd_" } /^function cmd_.*+\s*\(\)\s*\{\s*##/ { sub("\\\\n",sprintf("\n%22c"," "), $$2); printf "\033[36m%-40s\033[0m %s\n", $2, $3}' "$_FILE")
+    
+    tmp+=$(awk 'BEGIN { FS="function cmd_|\\(\\)|{|## " } /^function cmd_/ {  printf "\033[36m%-40s\033[0m %s\n", $2, $5}' "$_FILE")
     tmp+="\n"
     tmp+=$(echo -e "$_EXTRA_HELP" | awk '{output=""; for(i=2;i<=NF;i++) output=output $i " "; printf "\033[36m%-40s\033[0m %s\n", $1, output}')
     echo -e "$tmp" | sort
@@ -147,7 +148,7 @@ function main() {
     init_help
 
     # 调用所有 init 函数
-    for init in $(awk 'BEGIN { FS=" |\\(" } /^function init_.*\(\)\s*{/ { print $2 }' $_FILE); do
+    for init in $(awk 'BEGIN { FS=" |\\(" } /^function init_.*\(\) *{ *$/ { print $2 }' $_FILE); do
         $init
     done
 
