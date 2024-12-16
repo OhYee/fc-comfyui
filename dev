@@ -8,7 +8,7 @@ DEFAULT_REGION=$(echo $REGIONS | awk '{print $1}') # 默认地域
 # 镜像基本信息
 NAMESPACE=ohyee
 REPO=fc-demo
-TAGS="SD LITE CLAY COUPLEPHOTO ICE FLUX LT FLUX_PULID" # 镜像类型列表
+TAGS="SD LITE CLAY COUPLEPHOTO ICE FLUX LT FLUX_PULID LORA" # 镜像类型列表
 
 LITE_TAG="fc-comfyui-lite"
 LITE_VERSIONS="v1 v2 v3 v4 v5 v6"
@@ -33,6 +33,9 @@ FLUX_PULID_VERSIONS="v1"
 
 BOARD_TAG="fc-comfyui-board"
 BOARD_VERSIONS="v1 v2"
+
+LORA_TAG="fc-comfyui-lora"
+LORA_VERSIONS="v1"
 
 function image_tag() {
     local id=$1
