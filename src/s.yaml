@@ -4,7 +4,7 @@ access: "{{ access }}"
 vars:
   region: "{{ region }}"
   functionName: "{{ functionName }}"
-  imageUrl: "registry.{{ region }}.aliyuncs.com/ohyee/fc-demo:fc-comfyui-{{ if type==='纯净版' }}lite-v5{{ else if type==='黏土风格' }}clay-v1{{ else if type === '冰冻一切' }}ice-v1{{ else if type === 'flux' }}flux-v1{{ else }}sd1.5-v5{{ /if }}"
+  imageUrl: "registry.{{ region }}.aliyuncs.com/ohyee/fc-demo:fc-comfyui-{{ if type==='纯净版' }}lite-v6{{ else if type==='黏土风格' }}clay-v1{{ else if type === '冰冻一切' }}ice-v1{{ else if type === 'flux' }}flux-v1{{ else }}sd1.5-v6{{ /if }}"
   logConfig: false
 
 resources:

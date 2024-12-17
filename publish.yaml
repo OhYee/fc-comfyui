@@ -3,12 +3,13 @@ Type: Project
 Name: fc-comfyui
 Provider:
   - 阿里云 
-Version: 0.0.8
+Version: 0.0.9
 Description: 部署 ComfyUI 到阿里云函数计算
 HomePage: https://github.com/OhYee/fc-comfyui
 Tags: 
   - 部署函数
 Category: 人工智能
+Organization: 阿里云函数计算（FC）
 Service:
   函数计算:
     Runtime: custom
