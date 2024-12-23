@@ -1,0 +1,13 @@
+--- old.py	2024-12-19 17:58:48.330899882 +0800
++++ new.py	2024-12-19 18:00:01.166901584 +0800
+@@ -206,6 +206,10 @@ class PIPFixer:
+         # fix numpy
+         try:
+             np = new_pip_versions.get('numpy')
++            print("pip_map", pip_map)
++            print("numpy version: ", np)
++            print("condition:" ,StrictVersion(np), StrictVersion('2'),StrictVersion(np) >= StrictVersion('2'))
++            
+             if np is not None:
+                 if StrictVersion(np) >= StrictVersion('2'):
+                     subprocess.check_output([sys.executable, '-m', 'pip', 'install', "numpy<2"], universal_newlines=True)

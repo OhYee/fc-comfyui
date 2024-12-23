@@ -9,6 +9,7 @@ _COMMAND_PREFIX="cmd_"
 _RETURN=""
 _DEBUG_TRACE=""
 _EXTRA_HELP=""
+LANG=en_US
 
 
 function add_help() { ## 增加一条帮助日志

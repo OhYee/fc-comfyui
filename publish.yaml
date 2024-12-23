@@ -3,7 +3,7 @@ Type: Project
 Name: fc-comfyui
 Provider:
   - 阿里云 
-Version: 0.0.9
+Version: 0.0.11
 Description: 部署 ComfyUI 到阿里云函数计算
 HomePage: https://github.com/OhYee/fc-comfyui
 Tags: 
@@ -32,6 +32,8 @@ Parameters:
       enum:
         - cn-hangzhou
         - cn-shanghai
+        - ap-southeast-1
+        - us-east-1
     functionName:
       title: 函数名
       type: string
@@ -45,6 +47,8 @@ Parameters:
       enum:
         - sd1.5
         - 纯净版
+        - 毛绒绒风格
+        - AI绘本
         - 黏土风格
         - 冰冻一切
         - flux

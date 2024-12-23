@@ -14,8 +14,8 @@ $el("style", {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        top: 0;
-        left: 0;
+        top: 40px;
+        left: 50px;
         right: 0;
         padding: 0.5em;
     }
@@ -82,10 +82,9 @@ app.registerExtension({
         window.__debug_set_sleep_time = (a) => sleepTime = a;
 
         const intervalId = setInterval(() => {
-            timerShow.textContent = `当前页面已打开 ${formatTime(startTime)}，本次页面预计产生费用 ${calcCost(startTime)}（仅供参考，请以实际账单为准），距离上次主动操作（出图、切换页面）已 ${formatTime(sleepTime)}，将在 ${formatTime(closeTime - sleepTime)} 后自动关闭页面，以节省费用。`
 
             if (isNotInTab) {
-                document.title = `ComfyUI 仍在消耗您的资源，将在 ${formatTime(closeTime - sleepTime)} 后自动关闭`
+                document.title = `ComfyUI 仍在消耗您的资源，将在 10 min 后自动关闭`
             } else if (document.title !== documentTitle) {
                 document.title = documentTitle;
             }
@@ -127,7 +126,7 @@ app.registerExtension({
                         }
                     }),
                 ]),
-                timerShow,
+                $el("p", { textContent: "由于 ComfyUI 会持续消耗您的资源，为了帮助您节省费用，页面将会在 10 min 后自动关闭" }),
                 $el("p", { textContent: "由于首次出图需要加载模型，故会导致出图时间较长，请耐心等待；" }),
                 $el("p", { textContent: "本页面内展示的模型等均由第三方提供，不对其导致您的不良结果或潜在风险承担任何责任，您需同意遵守第三方提出的各项要求，方可正式开启使用。" }),
                 $el("a", {

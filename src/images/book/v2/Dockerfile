@@ -34,17 +34,15 @@ WORKDIR /custom_nodes
 RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git && \
     cd ComfyUI-Manager && \
     git checkout "9e44617"
+# ComfyUI-Impact-Pack
+RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git && \
+    cd ComfyUI-Impact-Pack && \
+    git checkout "8f04714"
+# ComfyUI_Comfyroll_CustomNodes
+RUN git clone https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git
 
-RUN --mount=type=bind,source=/base/v6/built-in,target=/docker \
-    cp -R /docker/custom_nodes/* /custom_nodes/
-
-FROM python:3.10.9-slim AS models
-
-RUN apt update && apt install -y aria2
-
-COPY --from=registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-sd1.5-v1 "/built-in/models/checkpoints/sd-v1-5-inpainting.ckpt" "/models/checkpoints/sd-v1-5-inpainting.ckpt"
-
-
+# ComfyUI_FizzNodes
+RUN git clone https://github.com/FizzleDorf/ComfyUI_FizzNodes.git
 
 FROM golang:1.21 AS agent
 
@@ -66,8 +64,7 @@ ENV VIRTUAL_NAS="/virtual_nas"
 RUN --mount=type=cache,target=/var/cache/apt \
     apt update && \
     apt install -y \
-    rsync vim git curl wget jq ffmpeg \
-    gcc g++ unzip build-essential
+    rsync git
 
 # 从依赖镜像获取所需的依赖文件，并映射至 /mnt/auto/comfyui
 RUN --mount=type=bind,from=deps,source=/venv,target=/comfyui_venv \
@@ -87,7 +84,6 @@ WORKDIR ${COMFYUI}
 
 # 确保依赖最新
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip && \
     pip install -r ${COMFYUI}/requirements.txt --no-cache-dir && \ 
     find ${COMFYUI} -type f -name requirements.txt | xargs -I {} pip install -r {}
 
@@ -99,29 +95,36 @@ ENTRYPOINT [ "/entrypoint.bash" ]
 
 
 
+FROM python:3.10.9-slim AS models
+
+RUN apt update && apt install -y aria2
+
+# 335 MB
+RUN aria2c -x 16 --dir "/models/vae" --out "ae.safetensors" "https://huggingface.co/lovis93/testllm/resolve/main/ae.safetensors?download=true"
+
+# https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main 4.89G
+RUN aria2c -x 16 --dir "/models/clip" --out "t5xxl_fp8_e4m3fn.safetensors" "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors?download=true"
+
+# https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main 323M
+RUN aria2c -x 16 --dir "/models/clip" --out "clip_l.safetensors" "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true"
 
 
-# lite 轻量版镜像
-FROM base AS lite
-
-# 处理文件关系
-ARG IMAGE_TAG="${IMAGE_TAG}"
-ENV IMAGE_TAG=${IMAGE_TAG}
-
-RUN --mount=type=bind,from=agent,source=/agent,target=/mnt/agent \
-    --mount=type=bind,source=/base/v6,target=/docker \
-    bash /docker/init.bash
-
-
-
-
-# sd1.5 内置 sd1.5 模型及推荐自定义节点的镜像
-FROM base AS sd1.5
+FROM base
 
 # 内置模型
+RUN --mount=type=bind,from=registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-flux-v1,source=${BUILTIN}/models,target=/models \
+    mkdir -p ${BUILTIN}/models/checkpoints ${BUILTIN}/models/loras ${BUILTIN}/models/unet && \
+    cp /models/checkpoints/flux1-dev-fp8.safetensors ${BUILTIN}/models/unet
+
+
 RUN --mount=type=bind,from=models,source=/models,target=/models \
-    mkdir -p ${BUILTIN}/models/checkpoints && \
-    rsync -av /models/ ${BUILTIN}/models/
+    mkdir -p ${BUILTIN}/models/checkpoints ${BUILTIN}/models/loras ${BUILTIN}/models/unet && \
+    rsync -a --ignore-existing /models/* ${BUILTIN}/models/
+
+
+# # 内置插件(费用提醒插件)
+RUN --mount=type=bind,source=/base/v6,target=/docker \
+    cp -R /docker/built-in/custom_nodes/* ${BUILTIN}/custom_nodes/
 
 # 内置自定义节点
 RUN --mount=type=bind,from=custom_nodes,source=/custom_nodes,target=/custom_nodes \
@@ -129,15 +132,18 @@ RUN --mount=type=bind,from=custom_nodes,source=/custom_nodes,target=/custom_node
     mkdir -p ${BUILTIN}/custom_nodes && \
     rsync -av /custom_nodes/ ${BUILTIN}/custom_nodes
 
+# 内置文件
+RUN --mount=type=bind,source=/book/v2/built-in,target=/docker \
+    mkdir -p /comfyui/user/default/workflows/ && \
+    cp -R /docker/* /comfyui/user/default/workflows/
+
 # 更新依赖至最新
 RUN --mount=type=cache,target=/root/.cache/pip \
     find ${BUILTIN}/custom_nodes -type f -name requirements.txt | xargs -I {} pip install -r {}
 
 
-# 处理文件关系
-ARG IMAGE_TAG="${IMAGE_TAG}"
+ARG IMAGE_TAG=${IMAGE_TAG}
 ENV IMAGE_TAG=${IMAGE_TAG}
-
 RUN --mount=type=bind,from=agent,source=/agent,target=/mnt/agent \
     --mount=type=bind,source=/base/v6,target=/docker \
     bash /docker/init.bash

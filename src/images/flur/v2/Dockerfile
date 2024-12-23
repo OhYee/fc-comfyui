@@ -17,6 +17,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     scipy \
     tqdm \
     psutil \
+    numpy==1.26.4 \
     kornia>=0.7.1 && \
     pip install --no-cache-dir onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 
@@ -24,7 +25,7 @@ FROM alpine/git:2.36.2 AS repos
 
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /code && \
     cd /code && \
-    git checkout v0.3.6
+    git checkout "9a616b8"
 
 FROM alpine/git:2.36.2 AS custom_nodes
 
@@ -34,49 +35,55 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git && \
     cd ComfyUI-Manager && \
     git checkout "9e44617"
 
-RUN --mount=type=bind,source=/base/v6/built-in,target=/docker \
-    cp -R /docker/custom_nodes/* /custom_nodes/
-
 
 FROM golang:1.21 AS agent
+
 COPY agent /code
 RUN cd /code
 WORKDIR /code
 RUN go get
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /agent main.go    
-ARG BASE_IMAGE    
-FROM python:3.10.9-slim AS base    
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /agent main.go
+
+ARG BASE_IMAGE
+
+FROM python:3.10.9-slim AS base
+
 ENV BUILTIN="/built-in"
 ENV COMFYUI="/comfyui"
 ENV NAS_DIR="/mnt/auto/comfyui"
-ENV VIRTUAL_NAS="/virtual_nas"    
+ENV VIRTUAL_NAS="/virtual_nas"
+
 RUN --mount=type=cache,target=/var/cache/apt \
     apt update && \
     apt install -y \
-    rsync vim git curl wget jq ffmpeg \
-    gcc g++ unzip build-essential    
+    rsync git
+
 # 从依赖镜像获取所需的依赖文件，并映射至 /mnt/auto/comfyui
 RUN --mount=type=bind,from=deps,source=/venv,target=/comfyui_venv \
     mkdir -p /venv && \
-    rsync -av /comfyui_venv/ /venv    
+    rsync -av /comfyui_venv/ /venv
+
 # 获取 ComfyUI 代码
 RUN --mount=type=bind,from=repos,source=/code,target=/code \
     mkdir -p ${COMFYUI} && \
-    rsync -av /code/ ${COMFYUI}    
+    rsync -av /code/ ${COMFYUI}
+
 # 使用 venv 环境
 ENV VIRTUAL_ENV="/venv"
-ENV PATH="${VIRTUAL_ENV}/bin:$PATH"    
-WORKDIR ${COMFYUI}    
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+
+WORKDIR ${COMFYUI}
+
 # 确保依赖最新
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip && \
     pip install -r ${COMFYUI}/requirements.txt --no-cache-dir && \ 
-    find ${COMFYUI} -type f -name requirements.txt | xargs -I {} pip install -r {}    
+    find ${COMFYUI} -type f -name requirements.txt | xargs -I {} pip install -r {}
+
 # 移动自带文件
 RUN mkdir -p ${BUILTIN}/custom_nodes && \
-    rsync -av --remove-source-files ${COMFYUI}/custom_nodes/ ${BUILTIN}/custom_nodes    
+    rsync -av --remove-source-files ${COMFYUI}/custom_nodes/ ${BUILTIN}/custom_nodes
+
 ENTRYPOINT [ "/entrypoint.bash" ]
-    
 
 
 
@@ -84,25 +91,33 @@ FROM python:3.10.9-slim AS models
 
 RUN apt update && apt install -y aria2
 
-# https://huggingface.co/lllyasviel/flux1_dev/tree/main
-RUN aria2c -x 16 --dir "/models/unet" --out "flux1-dev-fp8.safetensors" "https://huggingface.co/lllyasviel/flux1_dev/resolve/main/flux1-dev-fp8.safetensors?download=true"
-
 RUN aria2c -x 16 --dir "/models/loras" --out "flux-lora-000003.safetensors" "https://dipper-cache-cn-hangzhou.oss-cn-hangzhou.aliyuncs.com/models/loras/flux-lora-000003.safetensors"
 
-RUN aria2c -x 16 --dir "/models/vae" --out "flux-ae.sft" "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/vae/diffusion_pytorch_model.safetensors?download=true"
+# 335 MB
+RUN aria2c -x 16 --dir "/models/vae" --out "ae.safetensors" "https://huggingface.co/lovis93/testllm/resolve/main/ae.safetensors?download=true"
 
-# https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main 5.06G
-RUN aria2c -x 16 --dir "/models/clip" --out "t5-v1_1-xxl-encoder-Q8_0.gguf" "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf?download=true"
+# https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main 4.89G
+RUN aria2c -x 16 --dir "/models/clip" --out "t5xxl_fp8_e4m3fn.safetensors" "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors?download=true"
 
-# https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main 246M
+# https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main 323M
 RUN aria2c -x 16 --dir "/models/clip" --out "clip_l.safetensors" "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true"
 
+# # https://huggingface.co/city96/FLUX.1-dev-gguf/tree/main 12.9G
+# RUN aria2c -x 16 --dir "/models/unet" --out "flux1-dev-fp8.safetensors" "https://huggingface.co/lllyasviel/flux1_dev/resolve/main/flux1-dev-fp8.safetensors?download=true"
 
 FROM base
 
 # 内置模型
+RUN --mount=type=bind,from=registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-flux-v1,source=${BUILTIN}/models,target=/models \
+    mkdir -p ${BUILTIN}/models/checkpoints ${BUILTIN}/models/loras ${BUILTIN}/models/unet && \
+    cp /models/checkpoints/flux1-dev-fp8.safetensors ${BUILTIN}/models/unet
+# RUN --mount=type=bind,from=models,source=/models,target=/models \
+#     mkdir -p ${BUILTIN}/models/checkpoints ${BUILTIN}/models/loras ${BUILTIN}/models/unet && \
+#     rsync -a --ignore-existing /models/unet/flux1-dev-fp8.safetensors ${BUILTIN}/models/unet
+
+
 RUN --mount=type=bind,from=models,source=/models,target=/models \
-    mkdir -p ${BUILTIN}/models/checkpoints ${BUILTIN}/models/loras && \
+    mkdir -p ${BUILTIN}/models/checkpoints ${BUILTIN}/models/loras ${BUILTIN}/models/unet && \
     rsync -a --ignore-existing /models/* ${BUILTIN}/models/
 
 # 内置插件(费用提醒插件)
@@ -115,6 +130,11 @@ RUN --mount=type=bind,from=custom_nodes,source=/custom_nodes,target=/custom_node
     mkdir -p ${BUILTIN}/custom_nodes && \
     rsync -av /custom_nodes/ ${BUILTIN}/custom_nodes
 
+# 内置文件
+RUN --mount=type=bind,source=/flur/v2/built-in,target=/docker \
+    mkdir -p /comfyui/user/default/workflows/ && \
+    cp -R /docker/* /comfyui/user/default/workflows/
+
 # 更新依赖至最新
 RUN --mount=type=cache,target=/root/.cache/pip \
     find ${BUILTIN}/custom_nodes -type f -name requirements.txt | xargs -I {} pip install -r {}
@@ -122,7 +142,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 ARG IMAGE_TAG=${IMAGE_TAG}
 ENV IMAGE_TAG=${IMAGE_TAG}
-RUN --mount=type=bind,from=agent,source=/agent,target=/agent \
+RUN --mount=type=bind,from=agent,source=/agent,target=/mnt/agent \
     --mount=type=bind,source=/base/v6,target=/docker \
     bash /docker/init.bash
-
