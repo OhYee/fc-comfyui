@@ -1,0 +1,1065 @@
+{
+  "last_node_id": 227,
+  "last_link_id": 262,
+  "nodes": [
+    {
+      "id": 16,
+      "type": "KSamplerSelect",
+      "pos": [
+        686,
+        -300
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            19
+          ],
+          "shape": 3,
+          "label": "采样器"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        670,
+        -72
+      ],
+      "size": [
+        328.41131591796875,
+        106
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 37,
+          "slot_index": 0,
+          "label": "噪波生成"
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 30,
+          "slot_index": 1,
+          "label": "引导"
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 19,
+          "slot_index": 2,
+          "label": "采样器"
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 20,
+          "slot_index": 3,
+          "label": "Sigmas"
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 89,
+          "slot_index": 4,
+          "label": "Latent"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            85
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "输出"
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "shape": 3,
+          "label": "降噪输出"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 64,
+      "type": "VAEDecode",
+      "pos": [
+        1011,
+        -82
+      ],
+      "size": [
+        394.8762512207031,
+        116.06951904296875
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 85,
+          "label": "Latent"
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 86,
+          "slot_index": 1,
+          "label": "VAE"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            87
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "图像"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 25,
+      "type": "RandomNoise",
+      "pos": [
+        179,
+        -452
+      ],
+      "size": [
+        483.3719482421875,
+        83.77910614013672
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            37
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "噪波生成"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        308964180734475,
+        "randomize"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "VAELoader",
+      "pos": [
+        178,
+        -178
+      ],
+      "size": [
+        488.1351013183594,
+        59.40201950073242
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            86
+          ],
+          "slot_index": 0,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "ae.safetensors"
+      ]
+    },
+    {
+      "id": 11,
+      "type": "DualCLIPLoader",
+      "pos": [
+        165,
+        -75
+      ],
+      "size": [
+        497.1701965332031,
+        116.45471954345703
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            146
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "CLIP"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DualCLIPLoader"
+      },
+      "widgets_values": [
+        "t5xxl_fp8_e4m3fn.safetensors",
+        "clip_l.safetensors",
+        "flux"
+      ]
+    },
+    {
+      "id": 65,
+      "type": "PreviewImage",
+      "pos": [
+        1574,
+        -82
+      ],
+      "size": [
+        1378.2236328125,
+        1855.2203369140625
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 87,
+          "label": "图像"
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 128,
+      "type": "PrimitiveNode",
+      "pos": [
+        767.0858764648438,
+        257.29180908203125
+      ],
+      "size": [
+        396.7906494140625,
+        124.693359375
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            144
+          ],
+          "slot_index": 0,
+          "widget": {
+            "name": "app_text"
+          }
+        }
+      ],
+      "properties": {
+        "Run widget replace on values": false
+      },
+      "widgets_values": [
+        "anime style, high quality"
+      ]
+    },
+    {
+      "id": 127,
+      "type": "PrimitiveNode",
+      "pos": [
+        188.73367309570312,
+        589.3453369140625
+      ],
+      "size": [
+        589.0089111328125,
+        219.75216674804688
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            143
+          ],
+          "slot_index": 0,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "properties": {
+        "Run widget replace on values": false
+      },
+      "widgets_values": [
+        "\"0\": \"A bustling city at night, with neon lights and flowing traffic. Lei Ying stands on the balcony of his luxurious villa, gazing at the cityscape, feeling weary and empty. The interior of the villa is lavishly decorated, but Lei Ying's expression shows loneliness and confusion.\",\n\n\"1\": \"An ordinary office with neatly arranged desks and walls adorned with company posters. Lin Feng walks in with a simple backpack, wearing modest clothes, carrying a mix of nervousness and anticipation. The colleagues are busy working, and they greet him warmly as he arrives.\",\n\n\"2\": \"In the office, colleagues gather around discussing work, creating a warm atmosphere. Lin Feng joins them for lunch, sharing stories and ideas. The background includes office equipment and small decorations, creating a cozy work environment.\",\n\n\"3\": \"In the office, colleagues gather for a meeting, the atmosphere tense but determined. Lin Feng stands in front of a whiteboard, leading the team to formulate plans. Colleagues listen attentively and actively offer suggestions, with charts and documents displayed in the background.\",\n\n\"4\": \"A bright sunny day in the city. Lin Feng, with a backpack, smiles as he walks down the street. Familiar buildings and pedestrians surround him, but his expression is filled with new hope and determination. The background includes bustling crowds and iconic buildings like cafes and shops.\",\n\n"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "BasicGuider",
+      "pos": [
+        698,
+        -196
+      ],
+      "size": [
+        316.94989013671875,
+        86.54902648925781
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 248,
+          "slot_index": 0,
+          "label": "模型"
+        },
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 147,
+          "slot_index": 1,
+          "label": "条件"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            30
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "引导"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicGuider"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "UNETLoader",
+      "pos": [
+        163,
+        -321
+      ],
+      "size": [
+        491.79754638671875,
+        104.9825210571289
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            246
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "模型"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "flux1-dev-fp8.safetensors",
+        "fp8_e4m3fn"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "BasicScheduler",
+      "pos": [
+        698.8283081054688,
+        -453.712646484375
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 247,
+          "slot_index": 0,
+          "label": "模型"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            20
+          ],
+          "shape": 3,
+          "label": "Sigmas"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": [
+        "simple",
+        8,
+        1
+      ]
+    },
+    {
+      "id": 66,
+      "type": "EmptyLatentImage",
+      "pos": [
+        886,
+        621
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            89
+          ],
+          "shape": 3,
+          "label": "Latent"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        5
+      ]
+    },
+    {
+      "id": 220,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        166,
+        -585
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 246,
+          "label": "模型"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            247,
+            248
+          ],
+          "label": "模型",
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "diffusion_pytorch_model.safetensors",
+        1
+      ]
+    },
+    {
+      "id": 126,
+      "type": "BatchPromptSchedule",
+      "pos": [
+        1120.109130859375,
+        -467.68133544921875
+      ],
+      "size": [
+        400,
+        318
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 146,
+          "label": "CLIP"
+        },
+        {
+          "name": "pre_text",
+          "type": "STRING",
+          "link": 262,
+          "widget": {
+            "name": "pre_text"
+          },
+          "label": "预置文本"
+        },
+        {
+          "name": "app_text",
+          "type": "STRING",
+          "link": 144,
+          "widget": {
+            "name": "app_text"
+          },
+          "label": "附加文本"
+        },
+        {
+          "name": "pw_a",
+          "type": "FLOAT",
+          "widget": {
+            "name": "pw_a"
+          },
+          "label": "提示词权重A(pw_a)"
+        },
+        {
+          "name": "pw_b",
+          "type": "FLOAT",
+          "widget": {
+            "name": "pw_b"
+          },
+          "label": "提示词权重B(pw_b)"
+        },
+        {
+          "name": "pw_c",
+          "type": "FLOAT",
+          "widget": {
+            "name": "pw_c"
+          },
+          "label": "提示词权重C(pw_c)"
+        },
+        {
+          "name": "pw_d",
+          "type": "FLOAT",
+          "widget": {
+            "name": "pw_d"
+          },
+          "label": "提示词权重D(pw_d)"
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 143,
+          "widget": {
+            "name": "text"
+          },
+          "label": "文本"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "POS",
+          "type": "CONDITIONING",
+          "links": [
+            147
+          ],
+          "slot_index": 0,
+          "shape": 3
+        },
+        {
+          "name": "NEG",
+          "type": "CONDITIONING",
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BatchPromptSchedule"
+      },
+      "widgets_values": [
+        "\"0\": \"A bustling city at night, with neon lights and flowing traffic. Lei Ying stands on the balcony of his luxurious villa, gazing at the cityscape, feeling weary and empty. The interior of the villa is lavishly decorated, but Lei Ying's expression shows loneliness and confusion.\",\n\n\"1\": \"An ordinary office with neatly arranged desks and walls adorned with company posters. Lin Feng walks in with a simple backpack, wearing modest clothes, carrying a mix of nervousness and anticipation. The colleagues are busy working, and they greet him warmly as he arrives.\",\n\n\"2\": \"In the office, colleagues gather around discussing work, creating a warm atmosphere. Lin Feng joins them for lunch, sharing stories and ideas. The background includes office equipment and small decorations, creating a cozy work environment.\",\n\n\"3\": \"In the office, colleagues gather for a meeting, the atmosphere tense but determined. Lin Feng stands in front of a whiteboard, leading the team to formulate plans. Colleagues listen attentively and actively offer suggestions, with charts and documents displayed in the background.\",\n\n\"4\": \"A bright sunny day in the city. Lin Feng, with a backpack, smiles as he walks down the street. Familiar buildings and pedestrians surround him, but his expression is filled with new hope and determination. The background includes bustling crowds and iconic buildings like cafes and shops.\",\n\n",
+        120,
+        false,
+        "a young man,Short hair,Wearing glasses,Wearing a green T-shirt",
+        "anime style, high quality",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 227,
+      "type": "easy promptConcat",
+      "pos": [
+        -287,
+        -113
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "prompt1",
+          "type": "STRING",
+          "link": 258,
+          "widget": {
+            "name": "prompt1"
+          },
+          "shape": 7
+        },
+        {
+          "name": "prompt2",
+          "type": "STRING",
+          "link": 259,
+          "widget": {
+            "name": "prompt2"
+          },
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            262
+          ],
+          "label": "提示词",
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy promptConcat"
+      },
+      "widgets_values": [
+        "",
+        "",
+        ""
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 129,
+      "type": "PrimitiveNode",
+      "pos": [
+        228,
+        212
+      ],
+      "size": [
+        421.5067443847656,
+        155.20045471191406
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "connect to widget input",
+          "type": "*",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Run widget replace on values": false
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 223,
+      "type": "easy positive",
+      "pos": [
+        -314,
+        97
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "STRING",
+          "links": [
+            258
+          ],
+          "label": "正面提示词",
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy positive"
+      },
+      "widgets_values": [
+        "a young man,Short hair,Wearing glasses,Wearing a green T-shirt",
+        true
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 224,
+      "type": "easy negative",
+      "pos": [
+        -319,
+        360
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "negative",
+          "type": "STRING",
+          "links": [
+            259
+          ],
+          "label": "负面提示词",
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy negative"
+      },
+      "widgets_values": [
+        "",
+        true
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    }
+  ],
+  "links": [
+    [
+      19,
+      16,
+      0,
+      13,
+      2,
+      "SAMPLER"
+    ],
+    [
+      20,
+      17,
+      0,
+      13,
+      3,
+      "SIGMAS"
+    ],
+    [
+      30,
+      22,
+      0,
+      13,
+      1,
+      "GUIDER"
+    ],
+    [
+      37,
+      25,
+      0,
+      13,
+      0,
+      "NOISE"
+    ],
+    [
+      85,
+      13,
+      0,
+      64,
+      0,
+      "LATENT"
+    ],
+    [
+      86,
+      10,
+      0,
+      64,
+      1,
+      "VAE"
+    ],
+    [
+      87,
+      64,
+      0,
+      65,
+      0,
+      "IMAGE"
+    ],
+    [
+      89,
+      66,
+      0,
+      13,
+      4,
+      "LATENT"
+    ],
+    [
+      143,
+      127,
+      0,
+      126,
+      7,
+      "STRING"
+    ],
+    [
+      144,
+      128,
+      0,
+      126,
+      2,
+      "STRING"
+    ],
+    [
+      146,
+      11,
+      0,
+      126,
+      0,
+      "CLIP"
+    ],
+    [
+      147,
+      126,
+      0,
+      22,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      246,
+      12,
+      0,
+      220,
+      0,
+      "MODEL"
+    ],
+    [
+      247,
+      220,
+      0,
+      17,
+      0,
+      "MODEL"
+    ],
+    [
+      248,
+      220,
+      0,
+      22,
+      0,
+      "MODEL"
+    ],
+    [
+      258,
+      223,
+      0,
+      227,
+      0,
+      "STRING"
+    ],
+    [
+      259,
+      224,
+      0,
+      227,
+      1,
+      "STRING"
+    ],
+    [
+      262,
+      227,
+      0,
+      126,
+      1,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 12,
+      "title": "",
+      "bounding": [
+        2138,
+        -771,
+        140,
+        80
+      ],
+      "color": "#222222",
+      "font_size": 200,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "画风提示词",
+      "bounding": [
+        698,
+        58,
+        541,
+        363
+      ],
+      "color": "#3f789e",
+      "font_size": 100,
+      "flags": {}
+    },
+    {
+      "id": 1,
+      "title": "人物特征提示词",
+      "bounding": [
+        185.14524841308594,
+        62.7764892578125,
+        507,
+        363
+      ],
+      "color": "#3f789e",
+      "font_size": 70,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "场景描述提示词",
+      "bounding": [
+        173,
+        434,
+        619,
+        390
+      ],
+      "color": "#3f789e",
+      "font_size": 80,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "生成张数大小",
+      "bounding": [
+        803,
+        434,
+        479,
+        385
+      ],
+      "color": "#3f789e",
+      "font_size": 80,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.4122927695244585,
+      "offset": [
+        682.3335882914873,
+        680.6745568273035
+      ]
+    },
+    "0246.VERSION": [
+      0,
+      0,
+      4
+    ]
+  },
+  "version": 0.4
+}

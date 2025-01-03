@@ -1,0 +1,937 @@
+{
+  "last_node_id": 233,
+  "last_link_id": 270,
+  "nodes": [
+    {
+      "id": 66,
+      "type": "EmptyLatentImage",
+      "pos": [
+        -71.04305267333984,
+        300.5147705078125
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            89
+          ],
+          "shape": 3,
+          "label": "Latent"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ]
+    },
+    {
+      "id": 11,
+      "type": "DualCLIPLoader",
+      "pos": [
+        162,
+        -59
+      ],
+      "size": [
+        497.1701965332031,
+        116.45471954345703
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            267
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "CLIP"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DualCLIPLoader"
+      },
+      "widgets_values": [
+        "t5xxl_fp8_e4m3fn.safetensors",
+        "clip_l.safetensors",
+        "flux"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "VAELoader",
+      "pos": [
+        159,
+        -174
+      ],
+      "size": [
+        488.1351013183594,
+        59.40201950073242
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            86
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "VAE"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "ae.safetensors"
+      ]
+    },
+    {
+      "id": 25,
+      "type": "RandomNoise",
+      "pos": [
+        163,
+        -453
+      ],
+      "size": [
+        483.3719482421875,
+        83.77910614013672
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            37
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "噪波生成"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        401930159395600,
+        "randomize"
+      ]
+    },
+    {
+      "id": 231,
+      "type": "CLIPTextEncode",
+      "pos": [
+        1031,
+        -282
+      ],
+      "size": [
+        353.17901611328125,
+        332.35296630859375
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 267,
+          "label": "CLIP"
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 270,
+          "widget": {
+            "name": "text"
+          },
+          "label": "文本"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            268
+          ],
+          "slot_index": 0,
+          "label": "条件"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "blur，mosaic",
+        true
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 17,
+      "type": "BasicScheduler",
+      "pos": [
+        1027,
+        -447
+      ],
+      "size": [
+        368.9898681640625,
+        110.27798461914062
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 247,
+          "slot_index": 0,
+          "label": "模型"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            20
+          ],
+          "shape": 3,
+          "label": "Sigmas"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": [
+        "simple",
+        8,
+        1
+      ]
+    },
+    {
+      "id": 64,
+      "type": "VAEDecode",
+      "pos": [
+        1414,
+        -70
+      ],
+      "size": [
+        394.8762512207031,
+        116.06951904296875
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 85,
+          "label": "Latent"
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 86,
+          "slot_index": 1,
+          "label": "VAE"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            87
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "图像"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 13,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        1427,
+        -251
+      ],
+      "size": [
+        378.7265930175781,
+        112.2659683227539
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 37,
+          "slot_index": 0,
+          "label": "噪波生成"
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 30,
+          "slot_index": 1,
+          "label": "引导"
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 19,
+          "slot_index": 2,
+          "label": "采样器"
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 20,
+          "slot_index": 3,
+          "label": "Sigmas"
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 89,
+          "slot_index": 4,
+          "label": "Latent"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            85
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "输出"
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "shape": 3,
+          "label": "降噪输出"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 16,
+      "type": "KSamplerSelect",
+      "pos": [
+        1425,
+        -436
+      ],
+      "size": [
+        385.76312255859375,
+        115.1642837524414
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            19
+          ],
+          "shape": 3,
+          "label": "采样器"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
+      ]
+    },
+    {
+      "id": 127,
+      "type": "PrimitiveNode",
+      "pos": [
+        168.90902709960938,
+        778.96484375
+      ],
+      "size": [
+        1396.380859375,
+        490.53240966796875
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            264
+          ],
+          "slot_index": 0,
+          "widget": {
+            "name": "multiline_text"
+          },
+          "label": "STRING"
+        }
+      ],
+      "properties": {
+        "Run widget replace on values": false
+      },
+      "widgets_values": [
+        "\"0\": \"Xia Yao stands on a bustling street, surrounded by a throng of people and towering skyscrapers. Her figure appears resolute in the crowd, her eyes deep and bright, revealing determination and wisdom. Though her face is round, her short black hair makes her look more capable.\",\n\"1\": \"Xia Yao sits in a simple office, with piles of documents and materials on the desk. The city lights reflect on her face as night falls outside. Her eyes, with double eyelids, shine with a determined spirit despite the fatigue.\",\n\"2\": \"Xia Yao stands in a café, talking to an investor. Her expression is confident and composed, her brown eyes shining with wisdom. She wears a simple yet elegant business suit, exuding professionalism and capability. The surrounding environment is quiet and comfortable, providing a good atmosphere for their conversation.\",\n\"3\": \"Xia Yao stands in the company\"s meeting room, facing many employees and partners. Her presence is powerful and steady, her round face smiling. Her eyes show firmness and confidence, her short black hair neat and tidy. The whole room is filled with a positive and uplifting atmosphere.\",\n\"4\": \"Xia Yao stands on the stage at the awards ceremony, receiving applause from the audience. Her round face is filled with a happy smile, her brown eyes showing pride. She wears an elegant evening gown, exuding a noble and confident aura. The background of the stage features her company\"s logo, symbolizing her success.\""
+      ]
+    },
+    {
+      "id": 220,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        667.41455078125,
+        -450.09686279296875
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 246,
+          "label": "模型"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            247,
+            248
+          ],
+          "slot_index": 0,
+          "label": "模型"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "diffusion_pytorch_model.safetensors",
+        1.01
+      ]
+    },
+    {
+      "id": 22,
+      "type": "BasicGuider",
+      "pos": [
+        700.7108764648438,
+        -382.0360412597656
+      ],
+      "size": [
+        316.94989013671875,
+        86.54902648925781
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 248,
+          "slot_index": 0,
+          "label": "模型"
+        },
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 268,
+          "slot_index": 1,
+          "label": "条件"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            30
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "引导"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicGuider"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 229,
+      "type": "CR Prompt List",
+      "pos": [
+        676,
+        -168
+      ],
+      "size": [
+        321.0063781738281,
+        215.63182067871094
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "multiline_text",
+          "type": "STRING",
+          "link": 264,
+          "widget": {
+            "name": "multiline_text"
+          },
+          "label": "multiline_text"
+        },
+        {
+          "name": "prepend_text",
+          "type": "STRING",
+          "link": 265,
+          "widget": {
+            "name": "prepend_text"
+          },
+          "label": "prepend_text"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            270
+          ],
+          "slot_index": 0,
+          "shape": 6,
+          "label": "prompt"
+        },
+        {
+          "name": "body_text",
+          "type": "STRING",
+          "shape": 6,
+          "label": "body_text"
+        },
+        {
+          "name": "show_help",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 2,
+          "shape": 3,
+          "label": "显示帮助"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CR Prompt List"
+      },
+      "widgets_values": [
+        "anime style,high quality,A 20-24-year-old Asian woman, with a round and adorable face, double eyelids, and deep, bright brown eyes showing wisdom and tenacity. Her short black hair is neat and tidy, and she exudes confidence and capability in every move",
+        "\"0\": \"Xia Yao stands on a bustling street, surrounded by a throng of people and towering skyscrapers. Her figure appears resolute in the crowd, her eyes deep and bright, revealing determination and wisdom. Though her face is round, her short black hair makes her look more capable.\",\n\"1\": \"Xia Yao sits in a simple office, with piles of documents and materials on the desk. The city lights reflect on her face as night falls outside. Her eyes, with double eyelids, shine with a determined spirit despite the fatigue.\",\n\"2\": \"Xia Yao stands in a café, talking to an investor. Her expression is confident and composed, her brown eyes shining with wisdom. She wears a simple yet elegant business suit, exuding professionalism and capability. The surrounding environment is quiet and comfortable, providing a good atmosphere for their conversation.\",\n\"3\": \"Xia Yao stands in the company\"s meeting room, facing many employees and partners. Her presence is powerful and steady, her round face smiling. Her eyes show firmness and confidence, her short black hair neat and tidy. The whole room is filled with a positive and uplifting atmosphere.\",\n\"4\": \"Xia Yao stands on the stage at the awards ceremony, receiving applause from the audience. Her round face is filled with a happy smile, her brown eyes showing pride. She wears an elegant evening gown, exuding a noble and confident aura. The background of the stage features her company\"s logo, symbolizing her success.\"",
+        "",
+        0,
+        1000,
+        true
+      ]
+    },
+    {
+      "id": 230,
+      "type": "ShowText|pysssss",
+      "pos": [
+        904.3528442382812,
+        214.28762817382812
+      ],
+      "size": [
+        866.2258911132812,
+        356.6421813964844
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          },
+          "label": "文本"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0,
+          "shape": 6,
+          "label": "字符串"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText|pysssss"
+      },
+      "widgets_values": [
+        "",
+        "anime style,high quality,A 20-24-year-old Asian woman, with a round and adorable face, double eyelids, and deep, bright brown eyes showing wisdom and tenacity. Her short black hair is neat and tidy, and she exudes confidence and capability in every move\"0\": \"Xia Yao stands on a bustling street, surrounded by a throng of people and towering skyscrapers. Her figure appears resolute in the crowd, her eyes deep and bright, revealing determination and wisdom. Though her face is round, her short black hair makes her look more capable.\",",
+        "anime style,high quality,A 20-24-year-old Asian woman, with a round and adorable face, double eyelids, and deep, bright brown eyes showing wisdom and tenacity. Her short black hair is neat and tidy, and she exudes confidence and capability in every move\"1\": \"Xia Yao sits in a simple office, with piles of documents and materials on the desk. The city lights reflect on her face as night falls outside. Her eyes, with double eyelids, shine with a determined spirit despite the fatigue.\",",
+        "anime style,high quality,A 20-24-year-old Asian woman, with a round and adorable face, double eyelids, and deep, bright brown eyes showing wisdom and tenacity. Her short black hair is neat and tidy, and she exudes confidence and capability in every move\"2\": \"Xia Yao stands in a café, talking to an investor. Her expression is confident and composed, her brown eyes shining with wisdom. She wears a simple yet elegant business suit, exuding professionalism and capability. The surrounding environment is quiet and comfortable, providing a good atmosphere for their conversation.\",",
+        "anime style,high quality,A 20-24-year-old Asian woman, with a round and adorable face, double eyelids, and deep, bright brown eyes showing wisdom and tenacity. Her short black hair is neat and tidy, and she exudes confidence and capability in every move\"3\": \"Xia Yao stands in the company\"s meeting room, facing many employees and partners. Her presence is powerful and steady, her round face smiling. Her eyes show firmness and confidence, her short black hair neat and tidy. The whole room is filled with a positive and uplifting atmosphere.\",",
+        "anime style,high quality,A 20-24-year-old Asian woman, with a round and adorable face, double eyelids, and deep, bright brown eyes showing wisdom and tenacity. Her short black hair is neat and tidy, and she exudes confidence and capability in every move\"4\": \"Xia Yao stands on the stage at the awards ceremony, receiving applause from the audience. Her round face is filled with a happy smile, her brown eyes showing pride. She wears an elegant evening gown, exuding a noble and confident aura. The background of the stage features her company\"s logo, symbolizing her success.\""
+      ]
+    },
+    {
+      "id": 12,
+      "type": "UNETLoader",
+      "pos": [
+        163,
+        -321
+      ],
+      "size": [
+        491.79754638671875,
+        104.9825210571289
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            246
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "模型"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "flux1-schnell-fp8-e4m3fn.safetensors",
+        "fp8_e4m3fn"
+      ]
+    },
+    {
+      "id": 65,
+      "type": "PreviewImage",
+      "pos": [
+        1980,
+        -646
+      ],
+      "size": [
+        1378.2236328125,
+        1855.2203369140625
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 87,
+          "label": "图像"
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 129,
+      "type": "PrimitiveNode",
+      "pos": [
+        373.1044006347656,
+        265.6752624511719
+      ],
+      "size": [
+        500.2731018066406,
+        182.65061950683594
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            265
+          ],
+          "slot_index": 0,
+          "widget": {
+            "name": "prepend_text"
+          },
+          "label": "STRING"
+        }
+      ],
+      "properties": {
+        "Run widget replace on values": false
+      },
+      "widgets_values": [
+        "anime style,high quality,A 20-24-year-old Asian woman, with a round and adorable face, double eyelids, and deep, bright brown eyes showing wisdom and tenacity. Her short black hair is neat and tidy, and she exudes confidence and capability in every move"
+      ]
+    }
+  ],
+  "links": [
+    [
+      19,
+      16,
+      0,
+      13,
+      2,
+      "SAMPLER"
+    ],
+    [
+      20,
+      17,
+      0,
+      13,
+      3,
+      "SIGMAS"
+    ],
+    [
+      30,
+      22,
+      0,
+      13,
+      1,
+      "GUIDER"
+    ],
+    [
+      37,
+      25,
+      0,
+      13,
+      0,
+      "NOISE"
+    ],
+    [
+      85,
+      13,
+      0,
+      64,
+      0,
+      "LATENT"
+    ],
+    [
+      86,
+      10,
+      0,
+      64,
+      1,
+      "VAE"
+    ],
+    [
+      87,
+      64,
+      0,
+      65,
+      0,
+      "IMAGE"
+    ],
+    [
+      89,
+      66,
+      0,
+      13,
+      4,
+      "LATENT"
+    ],
+    [
+      246,
+      12,
+      0,
+      220,
+      0,
+      "MODEL"
+    ],
+    [
+      247,
+      220,
+      0,
+      17,
+      0,
+      "MODEL"
+    ],
+    [
+      248,
+      220,
+      0,
+      22,
+      0,
+      "MODEL"
+    ],
+    [
+      264,
+      127,
+      0,
+      229,
+      0,
+      "STRING"
+    ],
+    [
+      265,
+      129,
+      0,
+      229,
+      1,
+      "STRING"
+    ],
+    [
+      267,
+      11,
+      0,
+      231,
+      0,
+      "CLIP"
+    ],
+    [
+      268,
+      231,
+      0,
+      22,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      270,
+      229,
+      0,
+      231,
+      1,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "",
+      "bounding": [
+        2071.0732421875,
+        -782.255126953125,
+        140,
+        80
+      ],
+      "color": "#222222",
+      "font_size": 200,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "风格&人物特征提示词",
+      "bounding": [
+        344.0750732421875,
+        70.18939208984375,
+        1467.2742919921875,
+        513.7540283203125
+      ],
+      "color": "#3f789e",
+      "font_size": 70,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "场景描述提示词",
+      "bounding": [
+        160.90902709960938,
+        597.96484375,
+        1462.592529296875,
+        696.746826171875
+      ],
+      "color": "#3f789e",
+      "font_size": 80,
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "生成张数大小",
+      "bounding": [
+        -154.04306030273438,
+        113.51459503173828,
+        479,
+        385
+      ],
+      "color": "#3f789e",
+      "font_size": 80,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.544500000000001,
+      "offset": [
+        889.1529112558726,
+        60.33949871802695
+      ]
+    },
+    "0246.VERSION": [
+      0,
+      0,
+      4
+    ]
+  },
+  "version": 0.4
+}
