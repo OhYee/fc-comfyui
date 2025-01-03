@@ -8,7 +8,7 @@ DEFAULT_REGION=$(echo $REGIONS | awk '{print $1}') # 默认地域
 # 镜像基本信息
 NAMESPACE=ohyee
 REPO=fc-demo
-TAGS="SD LITE CLAY COUPLEPHOTO ICE FLUX LT FLUX_PULID FLUR BOOK" # 镜像类型列表
+TAGS="SD LITE CLAY COUPLEPHOTO ICE FLUX FLUX_PULID FLUR BOOK" # 镜像类型列表
 
 LITE_TAG="fc-comfyui-lite"
 LITE_VERSIONS="v1 v2 v3 v4 v5 v6"
@@ -38,7 +38,7 @@ FLUR_TAG="fc-comfyui-flur"
 FLUR_VERSIONS="v2"
 
 BOOK_TAG="fc-comfyui-book"
-BOOK_VERSIONS="v2"
+BOOK_VERSIONS="v2 v3 v4 v5"
 
 function image_tag() {
     local id=$1
@@ -140,7 +140,7 @@ function init_images() {
     for id in $TAGS; do
         versions=($(eval echo "\$${id}_VERSIONS"))
         id_lower=$(echo $id | tr '[:upper:]' '[:lower:]' )
-        latestVersion=${versions[@][-1]}
+        latestVersion=${versions[-1]}
 
 
         add_help "build-${id_lower}" "构建 ${id_lower} 最新镜像($latestVersion)"
