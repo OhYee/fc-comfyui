@@ -140,7 +140,7 @@ function init_images() {
     for id in $TAGS; do
         versions=($(eval echo "\$${id}_VERSIONS"))
         id_lower=$(echo $id | tr '[:upper:]' '[:lower:]' )
-        latestVersion=${versions[-1]}
+        latestVersion=${versions[${#versions[@]}-1]} # 兼容低版本 bash
 
 
         add_help "build-${id_lower}" "构建 ${id_lower} 最新镜像($latestVersion)"
