@@ -1,1 +1,1 @@
-docker build -t registry.us-east-1-internal.aliyuncs.com/ohyee/fc-demo:fc-comfyui-geely-v1 .
+docker build -t registry-vpc.us-east-1.aliyuncs.com/ohyee/fc-demo:fc-comfyui-geely-v3 .

@@ -79,7 +79,7 @@ class ServerlessApiService:
             files["overwrite"] = bytes("1")
 
         res = requests.post(
-            os.path.join(self.endpoint, "/upload/image"),
+            os.path.join(self.endpoint, "upload/image"),
             files=files,
         )
 
@@ -110,10 +110,10 @@ class ServerlessApiService:
                     image = value.get("inputs", {}).get("image", "")
                     content = ""
 
-                    if image.startswith("http://") or image.startwith("https://"):
+                    if image.startswith("http://") or image.startswith("https://"):
                         # 图片来源于 url
-                        content = requests.get(image).text
-                    if image.startswith("oss://"):
+                        content = requests.get(image).content
+                    elif image.startswith("oss://"):
                         # 图片来源于 oss
                         arr = image.split("/")
                         host = arr[2]

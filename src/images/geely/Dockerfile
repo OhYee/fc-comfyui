@@ -141,6 +141,12 @@ RUN mkdir -p /built-in/custom_nodes && \
 RUN sed -i ${COMFYUI}/comfy/sd.py -e '/model_patcher =.*unet_offload_device/{s/))/), weight_inplace_update=True)/;}'
 
 
+RUN mkdir -p /built-in/custom_nodes/ComfyUI-WD14-Tagger/models/ && \
+    curl -Lo /built-in/custom_nodes/ComfyUI-WD14-Tagger/models/wd-vit-tagger-v3.onnx "https://huggingface.co/SmilingWolf/wd-vit-tagger-v3/resolve/main/model.onnx?download=true" && \
+    curl -Lo /built-in/custom_nodes/ComfyUI-WD14-Tagger/models/wd-vit-tagger-v3.csv "https://huggingface.co/SmilingWolf/wd-vit-tagger-v3/resolve/main/selected_tags.csv?download=true"
+RUN mkdir -p /built-in/custom_nodes/comfyui_controlnet_aux/ckpts/LiheYoung/Depth-Anything/checkpoints && \
+    curl -Lo /built-in/custom_nodes/comfyui_controlnet_aux/ckpts/LiheYoung/Depth-Anything/checkpoints/depth_anything_vitl14.pth "https://huggingface.co/LiheYoung/depth_anything_vitl14/resolve/main/pytorch_model.bin?download=true"
+
 ENV DEEPGPU_PUB_LS=true
 ENV DEEPGPU_ENABLE_FLUX_LORA=true
 # ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
