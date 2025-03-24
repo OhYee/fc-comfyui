@@ -1,0 +1,6 @@
+flask~=3.1.0
+requests
+flask-sock
+websocket-client
+oss2
+flask-cors

@@ -1,0 +1,11 @@
+**/.git
+**/.gitignore
+**/*.log
+**/Dockerfile
+**/.dockerignore
+**/README.md
+**/venv
+**/test
+**/Makefile
+**/*.yaml
+**/__pycache__
