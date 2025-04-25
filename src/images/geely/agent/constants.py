@@ -1,5 +1,6 @@
 import os
 import sys
+import socket
 
 TYPE_COMFYUI = 'comfyui'
 TYPE_SD = 'sd'
@@ -60,9 +61,14 @@ AUTO_LAUNCH_SNAPSHOT_NAME = os.getenv("AUTO_LAUNCH_SNAPSHOT_NAME", "latest")
 # TODO 提供快照轮转机制，环境变量可配置未使用的快照上限，生产环境使用的快照需保证不会被轮转
 
 # OSS
+HEADER_KEY_ACCESS_KEY_ID = "x-fc-access-key-id"
+HEADER_KEY_ACCESS_KEY_SECRET = "x-fc-access-key-secret"
+HEADER_KEY_SECURITY_TOKEN = "x-fc-security-token"
 ALIBABA_CLOUD_ACCESS_KEY_ID = os.getenv("ALIBABA_CLOUD_ACCESS_KEY_ID", "")
 ALIBABA_CLOUD_ACCESS_KEY_SECRET = os.getenv("ALIBABA_CLOUD_ACCESS_KEY_SECRET", "")
 ALIBABA_CLOUD_SECURITY_TOKEN = os.getenv("ALIBABA_CLOUD_SECURITY_TOKEN", "")
 OSS_BUCKET_DOMAIN = os.getenv("OSS_BUCKET_DOMAIN", "")
 OSS_KEY_PREFIX = os.getenv("OSS_KEY_PREFIX", "comfyui_serverless_api")
 OSS_EXPIRES_IN_SECOND = os.getenv("OSS_EXPIRES_IN_SECOND", "")
+OSS_OUTPUT_DOMAIN = os.getenv("OSS_OUTPUT_DOMAIN", "")
+INSTANCE_ID = os.getenv("FC_INSTANCE_ID", socket.gethostname())

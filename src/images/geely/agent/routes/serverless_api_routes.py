@@ -75,12 +75,18 @@ class ServerlessApiRoutes:
             task_id = request.headers.get(ServerlessApiRoutes.HEADER_KEY_TASK_ID, request.headers.get(ServerlessApiRoutes.HEADER_KEY_TASK_ID_2, ""))
 
             if not stream:
-                return self.service.run(
-                    body,
-                    output_base64=output_base64,
-                    output_oss=output_oss,
-                    task_id=task_id,
-                )
+                try:
+                    return self.service.run(
+                        body,
+                        output_base64=output_base64,
+                        output_oss=output_oss,
+                        task_id=task_id,
+                    )
+                except Exception as e:
+                    print(e)
+                    return {
+                        "error_message": str(e),
+                    }, 500
 
             else:
                 q = Queue()
@@ -106,13 +112,22 @@ class ServerlessApiRoutes:
                     """
                     单独线程需要执行的任务
                     """
-                    result = self.service.run(
-                        body,
-                        output_base64=output_base64,
-                        output_oss=output_oss,
-                        callback=do_streaming,
-                        task_id=task_id,
-                    )
+                    try:
+                        result = self.service.run(
+                            body,
+                            output_base64=output_base64,
+                            output_oss=output_oss,
+                            callback=do_streaming,
+                            task_id=task_id,
+                        )
+                    except Exception as e:
+                        print(e)
+                        q.put(
+                            {
+                                "error_message": str(e),
+                            }
+                        )
+                        return
 
                     # 推送最终结果
                     q.put(result)
@@ -171,5 +186,11 @@ class ServerlessApiRoutes:
                 )
 
                 ws.send(json.dumps(results))
-            except:
-                pass
+            except Exception as e:
+                print(e)
+
+                try:
+                    ws.send(json.dumps({"error_message": str(e)}))
+                except:
+                    pass
+                return

@@ -1,4 +1,6 @@
 import os
+from urllib.parse import urlparse, urlunparse
+import constants
 import oss2
 
 
@@ -15,6 +17,7 @@ class OSS:
     ):
         self.oss_bucket = None
         self.oss_endpoint = endpoint
+        self.bucket_name = None
         self.oss_bucket_key_prefix = output_folder.strip("/ ")
         self.oss_expires = 0
         try:
@@ -30,10 +33,9 @@ class OSS:
             and arr[2] == "aliyuncs"
             and arr[3] == "com"
         ):
-            print(f"oss endpoint {self.oss_endpoint} is invalid")
-            return
-
-        self.bucket_name = arr[0].split("/")[-1] if "/" in arr[0] else arr[0]
+            print(f"failed to parse bucket_name from {self.oss_endpoint}")
+        else:
+            self.bucket_name = arr[0].split("/")[-1] if "/" in arr[0] else arr[0]
 
         self.oss_bucket = oss2.Bucket(
             (
@@ -80,22 +82,45 @@ class OSS:
         针对特定的数据进行签名，允许匿名访问
         """
         if not self.ready():
-            print("oss client is not init")
-            return ""
+            raise Exception("oss client is not init")
 
         if expires_in_second is None:
             expires_in_second = self.oss_expires
 
-        try:
-            if expires_in_second > 0:
-                return self.oss_bucket.sign_url(
-                    "GET", self.__file_path(key), expires_in_second,
-                    slash_safe=True
-                )
-        except Exception as e:
-            print(e)
-        
-        return "1"
+        if expires_in_second > 0:
+            u = self.oss_bucket.sign_url(
+                "GET", self.__file_path(key), expires_in_second, slash_safe=True
+            )
+
+            # url can visit on interet
+            parsed = urlparse(u)
+            host_parts = parsed.hostname.split(".")
+
+            if (constants.OSS_OUTPUT_DOMAIN):
+                parsed = parsed._replace(netloc=constants.OSS_OUTPUT_DOMAIN)
+                u = urlunparse(parsed)
+            elif (
+                len(host_parts) == 4
+                and host_parts[2] == "aliyuncs"
+                and host_parts[3] == "com"
+                and host_parts[1].startswith("oss-")
+                and host_parts[1].endswith("-internal")
+            ):
+                # 去掉 "-internal"
+                host_parts[1] = host_parts[1].removesuffix("-internal")
+                new_hostname = ".".join(host_parts)
+                if parsed.port:  # 保留端口（如果有）
+                    new_hostname += f":{parsed.port}"
+
+                # 替换 netloc，重建 URL
+                parsed = parsed._replace(netloc=new_hostname)
+                u = urlunparse(parsed)
+
+            return u
+
+        raise Exception(
+            "oss expires must greater than 0, current is {expires_in_second}"
+        )
 
     def object_key(self, key: str):
         """

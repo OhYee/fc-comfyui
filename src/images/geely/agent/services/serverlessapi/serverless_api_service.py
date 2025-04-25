@@ -12,6 +12,7 @@ from typing import Any
 
 import constants
 from store import Store, FileSystem, OSS
+from flask import request
 
 from uuid import uuid4
 
@@ -20,25 +21,44 @@ class ServerlessApiService:
     def __init__(self):
         self.endpoint = f"http://{constants.APP_HOST}"
 
-        # OSS 存储，需要时，可以将生成的图片同步至 OSS 中
-        self.oss_store = OSS(
-            constants.OSS_BUCKET_DOMAIN,
-            constants.ALIBABA_CLOUD_ACCESS_KEY_ID,
-            constants.ALIBABA_CLOUD_ACCESS_KEY_SECRET,
-            constants.ALIBABA_CLOUD_SECURITY_TOKEN,
-            constants.OSS_KEY_PREFIX,
-            constants.OSS_EXPIRES_IN_SECOND,
-        )
 
         # 状态持久化
         # 在异步调用 Serverless API 时，可以通过将状态写至持久化存储来确保在多个实例同时出图时仍然可以正确获取状态
         #
         # 默认实现了基于共享存储的方式实现的状态持久化（需要正确挂载 NAS）
         # 也可以考虑复用上面的 oss_store，将图片和状态均存储至 OSS 中
-        # 如 `self.store: Store = self.oss_store`
+        # 如 `self.store: Store = self.get_oss_store()`
         #
         # 必要时，也可以参考对应代码实现基于 Redis、TableStore、MySQL 等方式的状态持久化
         self.store: Store = FileSystem(f"{constants.MNT_DIR}/output/serverless_api")
+
+    def get_credentials(self):
+        # 优先尝试从 header 获取
+        ak = request.headers.get(constants.HEADER_KEY_ACCESS_KEY_ID)
+        sk = request.headers.get(constants.HEADER_KEY_ACCESS_KEY_SECRET)
+        sts = request.headers.get(constants.HEADER_KEY_SECURITY_TOKEN)
+
+        # 如果 header 没有，尝试从 env 获取
+        if ak == "" or sk == "":
+            ak = constants.ALIBABA_CLOUD_ACCESS_KEY_ID
+            sk = constants.ALIBABA_CLOUD_ACCESS_KEY_SECRET
+            sts = constants.ALIBABA_CLOUD_SECURITY_TOKEN
+
+        return ak, sk, sts
+
+
+    def get_oss_store(self):
+        ak, sk, sts = self.get_credentials()
+
+        # OSS 存储，需要时，可以将生成的图片同步至 OSS 中
+        return OSS(
+            constants.OSS_BUCKET_DOMAIN,
+            ak,
+            sk,
+            sts,
+            constants.OSS_KEY_PREFIX,
+            constants.OSS_EXPIRES_IN_SECOND,
+        )
 
     def api_prompt(self, client_id: str, prompt: Any):
         """
@@ -104,47 +124,63 @@ class ServerlessApiService:
         预处理 prompt 的内容
         - 如果以 base64、url 形式传输的图片，自动完成上传行为
         """
+        
+        ak, sk, sts = self.get_credentials()
         for key, value in prompt.items():
             if type(value) == dict and value.get("class_type") == "LoadImage":
-                try:
-                    image = value.get("inputs", {}).get("image", "")
-                    content = ""
+                image = value.get("inputs", {}).get("image", "")
+                content = ""
 
-                    if image.startswith("http://") or image.startswith("https://"):
-                        # 图片来源于 url
-                        content = requests.get(image).content
-                    elif image.startswith("oss://"):
-                        # 图片来源于 oss
-                        arr = image.split("/")
-                        host = arr[2]
-                        path = "/".join(arr[3:])
-                        oss = OSS(
-                            host, 
-                            constants.ALIBABA_CLOUD_ACCESS_KEY_ID,
-                            constants.ALIBABA_CLOUD_ACCESS_KEY_SECRET,
-                            constants.ALIBABA_CLOUD_SECURITY_TOKEN,
-                            "",
-                            0 ,
+                if image.startswith("http://") or image.startswith("https://"):
+                    # 图片来源于 url
+                    response = requests.get(image)
+                    if response.status_code >= 400:
+                        raise Exception(
+                            f"can not get image {image} from http url, got status code {response.status_code}"
                         )
-                        content = oss.get(path)
-                    elif len(image) > 64:
-                        # 图像可能是 base64，尝试使用 base64 解析
-                        content = base64.b64decode(image.strip())
-                    if content:
-                        res = self.api_upload_image(content, False)
-                        prompt[key]["inputs"]["image"] = res["name"]
 
-                except Exception as e:
-                    print(e)
+                    content = response.content
+                    if content == "":
+                        raise Exception(f"can not get image {image} from http url")
+                    
+                elif image.startswith("oss://"):
+                    # 图片来源于 oss
+                    arr = image.split("/")
+                    host = arr[2]
+                    path = "/".join(arr[3:])
+                    oss = OSS(host, ak, sk, sts, "", 0)
+                    content = oss.get(path)
+
+                    if content == "":
+                        raise Exception(f"can not get image {image} from oss")
+                elif len(image) > 64:
+                    # 图像可能是 base64，尝试使用 base64 解析
+                    try:
+                        content = base64.b64decode(image.strip())
+                    except:
+                        pass
+                if content:
+                    res = self.api_upload_image(content, False)
+                    prompt[key]["inputs"]["image"] = res["name"]
+
+            
             if type(value) == dict and value.get("class_type") == "KSampler":
                 if value.get("inputs", {}).get("seed") == -1:
                     prompt[key]["inputs"]["seed"] = random.randint(0, 4294967296)
+            if type(value) == dict and value.get("class_type") == "SaveImage":
+                try: 
+                    value["inputs"]["filename_prefix"] = value.get("inputs", {}).get("filename_prefix", "ComfyUI") + "_" + constants.INSTANCE_ID
+                except:
+                    pass
+
         return prompt
 
     def get_history_result(self, prompt_id: str, output_base64=False, output_oss=False):
         # 出图结果数组
         results = []
         history = self.api_get_history(prompt_id)
+
+        oss_store = self.get_oss_store()
 
         for node_id, output in history.get(prompt_id, {}).get("outputs", {}).items():
             images = output.get("images", [])
@@ -163,13 +199,17 @@ class ServerlessApiService:
                         img_output = base64.b64encode(img_bytes).decode("ascii")
 
                     if output_oss:
-                        if not self.oss_store.ready():
-                            print("oss client is not init")
-                        else:
-                            oss_filename = f"{str(uuid4())}.png"
-                            self.oss_store.put(oss_filename, img_bytes)
-                            oss_object_key = self.oss_store.object_key(oss_filename)
-                            oss_url = self.oss_store.sign(oss_filename)
+                        try:
+                            if not oss_store.ready():
+                                print("oss client is not init")
+                            else:
+                                oss_filename = f"{str(uuid4())}.png"
+                                oss_store.put(oss_filename, img_bytes)
+                                oss_object_key = oss_store.object_key(oss_filename)
+                                oss_url = oss_store.sign(oss_filename)
+                        except Exception as e:
+                            print(e)
+                            pass
 
                 results.append(
                     {

@@ -1,0 +1,36 @@
+FROM registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-geely-v3
+
+RUN pip3 install \
+    -i https://pypi.doubanio.com/simple/ \
+    --root-user-action=ignore \
+    --no-warn-script-location \
+    # kijai/ComfyUI-DepthAnythingV2
+    tensorrt opencv-python polygraphy \
+    # yolain/ComfyUI-Easy-Use
+    diffusers accelerate clip_interrogator>=0.6.0 lark onnxruntime opencv-python sentencepiece spandrel matplotlib peft \
+    # kijai/ComfyUI-KJNodes
+    pillow>=10.3.0 scipy color-matcher matplotlib huggingface_hub mss opencv-python \
+    # pythongosssss/ComfyUI-WD14-Tagger
+    onnxruntime \
+    # FizzleDorf/ComfyUI_FizzNodes
+    numpy pandas numexpr \
+    # comfyanonymous/ComfyUI_TensorRT
+    tensorrt>=10.0.1 onnx!=1.16.2 \
+    # Fannovel16/comfyui_controlnet_aux
+    torch importlib_metadata huggingface_hub scipy opencv-python>=4.7.0.72 \
+    filelock numpy Pillow einops torchvision pyyaml scikit-image python-dateutil \
+    mediapipe svglib fvcore yapf omegaconf ftfy addict yacs trimesh[easy] \
+    albumentations scikit-learn matplotlib \
+    # XLabs-AI/x-flux-comfyui
+    GitPython einops==0.8.0 transformers diffusers sentencepiece opencv-python \
+    # kijai/ComfyUI-SUPIR
+    transformers>=4.28.1 open-clip-torch>=2.24.0 Pillow>=9.4.0 pytorch-lightning>=2.2.1 omegaconf accelerate \
+    # Kosinkadink/ComfyUI-VideoHelperSuite
+    opencv-python imageio-ffmpeg \
+    # kijai/ComfyUI-Florence2
+    transformers>=4.39.0,!=4.50.* matplotlib timm pillow>=10.2.0 peft accelerate>=0.26.0 \
+    # cubiq/ComfyUI_essentials
+    numba colour-science rembg pixeloe transparent-background
+
+RUN rm -rf /agent
+COPY ./agent /agent
