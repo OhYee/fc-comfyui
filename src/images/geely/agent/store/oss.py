@@ -17,9 +17,13 @@ class OSS:
     ):
         self.oss_bucket = None
         self.oss_endpoint = endpoint
-        self.bucket_name = None
+        self.bucket_name = ""
         self.oss_bucket_key_prefix = output_folder.strip("/ ")
         self.oss_expires = 0
+
+        if not endpoint:
+            return
+
         try:
             self.oss_expires = int(expires_in_second)
         except:
@@ -33,9 +37,11 @@ class OSS:
             and arr[2] == "aliyuncs"
             and arr[3] == "com"
         ):
-            print(f"failed to parse bucket_name from {self.oss_endpoint}")
-        else:
-            self.bucket_name = arr[0].split("/")[-1] if "/" in arr[0] else arr[0]
+            print(f"oss endpoint {self.oss_endpoint} is invalid")
+            return
+
+        self.bucket_name = arr[0].split("/")[-1] if "/" in arr[0] else arr[0]
+        self.region = arr[1].removeprefix("oss-").removesuffix("-internal")
 
         self.oss_bucket = oss2.Bucket(
             (

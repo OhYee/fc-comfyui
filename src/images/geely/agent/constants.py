@@ -72,3 +72,5 @@ OSS_KEY_PREFIX = os.getenv("OSS_KEY_PREFIX", "comfyui_serverless_api")
 OSS_EXPIRES_IN_SECOND = os.getenv("OSS_EXPIRES_IN_SECOND", "")
 OSS_OUTPUT_DOMAIN = os.getenv("OSS_OUTPUT_DOMAIN", "")
 INSTANCE_ID = os.getenv("FC_INSTANCE_ID", socket.gethostname())
+
+PREWARM_PROMPT = os.getenv("PREWARM_PROMPT", "")

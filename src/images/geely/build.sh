@@ -1,1 +1,1 @@
-docker build -f Dockerfile.v7 -t registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-geely-v7 .
+docker build -f Dockerfile.v12 -t registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-geely-v12 .

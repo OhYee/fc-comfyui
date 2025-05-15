@@ -21,7 +21,6 @@ class ServerlessApiService:
     def __init__(self):
         self.endpoint = f"http://{constants.APP_HOST}"
 
-
         # 状态持久化
         # 在异步调用 Serverless API 时，可以通过将状态写至持久化存储来确保在多个实例同时出图时仍然可以正确获取状态
         #
@@ -34,9 +33,9 @@ class ServerlessApiService:
 
     def get_credentials(self):
         # 优先尝试从 header 获取
-        ak = request.headers.get(constants.HEADER_KEY_ACCESS_KEY_ID)
-        sk = request.headers.get(constants.HEADER_KEY_ACCESS_KEY_SECRET)
-        sts = request.headers.get(constants.HEADER_KEY_SECURITY_TOKEN)
+        ak = request.headers.get(constants.HEADER_KEY_ACCESS_KEY_ID, "")
+        sk = request.headers.get(constants.HEADER_KEY_ACCESS_KEY_SECRET, "")
+        sts = request.headers.get(constants.HEADER_KEY_SECURITY_TOKEN, "")
 
         # 如果 header 没有，尝试从 env 获取
         if ak == "" or sk == "":
@@ -45,7 +44,6 @@ class ServerlessApiService:
             sts = constants.ALIBABA_CLOUD_SECURITY_TOKEN
 
         return ak, sk, sts
-
 
     def get_oss_store(self):
         ak, sk, sts = self.get_credentials()
@@ -119,12 +117,15 @@ class ServerlessApiService:
             },
         ).content
 
+    def api_clear_history(self):
+        requests.post(os.path.join(self.endpoint, "history"), json={"clear": True})
+
     def parse_prompt(self, prompt: map):
         """
         预处理 prompt 的内容
         - 如果以 base64、url 形式传输的图片，自动完成上传行为
         """
-        
+
         ak, sk, sts = self.get_credentials()
         for key, value in prompt.items():
             if type(value) == dict and value.get("class_type") == "LoadImage":
@@ -142,7 +143,7 @@ class ServerlessApiService:
                     content = response.content
                     if content == "":
                         raise Exception(f"can not get image {image} from http url")
-                    
+
                 elif image.startswith("oss://"):
                     # 图片来源于 oss
                     arr = image.split("/")
@@ -163,13 +164,16 @@ class ServerlessApiService:
                     res = self.api_upload_image(content, False)
                     prompt[key]["inputs"]["image"] = res["name"]
 
-            
             if type(value) == dict and value.get("class_type") == "KSampler":
                 if value.get("inputs", {}).get("seed") == -1:
                     prompt[key]["inputs"]["seed"] = random.randint(0, 4294967296)
             if type(value) == dict and value.get("class_type") == "SaveImage":
-                try: 
-                    value["inputs"]["filename_prefix"] = value.get("inputs", {}).get("filename_prefix", "ComfyUI") + "_" + constants.INSTANCE_ID
+                try:
+                    value["inputs"]["filename_prefix"] = (
+                        value.get("inputs", {}).get("filename_prefix", "ComfyUI")
+                        + "_"
+                        + constants.INSTANCE_ID
+                    )
                 except:
                     pass
 
@@ -315,7 +319,10 @@ class ServerlessApiService:
         if not prompt_id:
             raise Exception("can not get prompt_id from ComfyUI")
 
-        ws_threading.join()
+        if len(self.api_get_history(prompt_id)) > 0:
+            ws.close()
+        else:
+            ws_threading.join()
 
         result = self.get_history_result(
             prompt_id, output_base64=output_base64, output_oss=output_oss

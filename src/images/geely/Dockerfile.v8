@@ -1,0 +1,11 @@
+FROM registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-geely-v7
+
+RUN pip3 install \
+    --root-user-action=ignore \
+    --no-warn-script-location \
+    https://hf-mirror.com/mit-han-lab/nunchaku/resolve/main/nunchaku-0.2.0%2Btorch2.5-cp310-cp310-linux_x86_64.whl
+
+RUN mkdir -p ${BUILTIN}/custom_nodes && \ 
+    cd ${BUILTIN}/custom_nodes && \
+    git clone https://github.com/mit-han-lab/ComfyUI-nunchaku && \
+    ln -sT ${BUILTIN}/custom_nodes/ComfyUI-nunchaku ${VIRTUAL_NAS}/custom_nodes/ComfyUI-nunchaku

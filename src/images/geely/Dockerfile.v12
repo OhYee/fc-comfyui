@@ -1,0 +1,8 @@
+FROM registry.cn-hangzhou.aliyuncs.com/ohyee/fc-demo:fc-comfyui-geely-v8
+
+# fix DeepGPU 动态换 Lora 不生效
+RUN sed -i '1023c\    return comfy.model_patcher.ModelPatcher(model, load_device=load_device, offload_device=offload_device, weight_inplace_update=True)' /comfyui/comfy/sd.py
+
+# 支持从环境变量读入预热工作流
+RUN rm -rf /agent
+COPY ./agent /agent

@@ -1,8 +1,10 @@
+import json
 import logging
 import threading
 import traceback
 
 import requests
+from services.serverlessapi.serverless_api_service import ServerlessApiService
 import websocket
 from flask import Flask, request, jsonify, Response
 from flask_sock import Sock
@@ -24,7 +26,7 @@ class Routes:
 
         management = ManagementRoutes()
         management.register(self.app)
-        
+
         serverless_api = ServerlessApiRoutes()
         serverless_api.register(self.app)
 
@@ -44,17 +46,35 @@ class Routes:
             service = ManagementService()
             service.start(constants.AUTO_LAUNCH_SNAPSHOT_NAME)
 
+            if constants.PREWARM_PROMPT:
+                try:
+                    print("prewarm models")
+                    prompt = json.loads(constants.PREWARM_PROMPT)
+                    api = ServerlessApiService()
+                    api.run(prompt)
+                    api.api_clear_history()
+                    print("prewarm models done")
+                except Exception as e:
+                    print("prewarm got exception")
+                    _handle_exception(e)
+                    
             print("FC Initialize End RequestId: " + request_id)
+
             return "Function is initialized, request_id: " + request_id + "\n"
 
-        @self._sock.route('/<path:path>')
+        @self._sock.route("/<path:path>")
         def proxy_ws(ws, path):
             backend_status = management.service.status
             if backend_status not in (BackendStatus.RUNNING, BackendStatus.SAVING):
-                return jsonify({
-                    "status": "failed",
-                    "message": "Please start your comfyui/sd service first"
-                }), 500
+                return (
+                    jsonify(
+                        {
+                            "status": "failed",
+                            "message": "Please start your comfyui/sd service first",
+                        }
+                    ),
+                    500,
+                )
 
             # print(f"Forwarding websocket request for path: {path}")
             target_url = f"ws://{constants.APP_HOST}/{path}"
@@ -69,13 +89,12 @@ class Routes:
                 logging.error(f"WebSocket client error: {error}")
 
             def on_close(_, close_status_code, close_msg):
-                logging.info(f"WebSocket connection closed: {close_status_code} - {close_msg}")
+                logging.info(
+                    f"WebSocket connection closed: {close_status_code} - {close_msg}"
+                )
 
             ws_client = websocket.WebSocketApp(
-                target_url,
-                on_message=on_message,
-                on_error=on_error,
-                on_close=on_close
+                target_url, on_message=on_message, on_error=on_error, on_close=on_close
             )
 
             ws_thread = threading.Thread(target=ws_client.run_forever)
@@ -89,15 +108,25 @@ class Routes:
             finally:
                 ws_client.close()
 
-        @self.app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
-        @self.app.route("/", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
+        @self.app.route(
+            "/<path:path>",
+            methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+        )
+        @self.app.route(
+            "/", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+        )
         def proxy(path=""):
             backend_status = management.service.status
             if backend_status not in (BackendStatus.RUNNING, BackendStatus.SAVING):
-                return jsonify({
-                    "status": "failed",
-                    "message": "Please start your comfyui/sd service first"
-                }), 500
+                return (
+                    jsonify(
+                        {
+                            "status": "failed",
+                            "message": "Please start your comfyui/sd service first",
+                        }
+                    ),
+                    500,
+                )
 
             target_url = f"http://{constants.APP_HOST}/{path}"
 
@@ -109,20 +138,23 @@ class Routes:
                 data=request.get_data(),
                 cookies=request.cookies,
                 allow_redirects=False,
-                verify=False  # 如果需要验证SSL证书，将其设置为True
+                verify=False,  # 如果需要验证SSL证书，将其设置为True
             )
 
             # issue: 实际内容被requests库解码，若保留content-encoding，可能会导致客户端试图重复解码，导致浏览器渲染SD页面失败
-            excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+            excluded_headers = [
+                "content-encoding",
+                "content-length",
+                "transfer-encoding",
+                "connection",
+            ]
             response_headers = {}
             for name, value in resp.headers.items():
                 if name.lower() not in excluded_headers:
                     response_headers[name] = value
 
             return Response(
-                response=resp.content,
-                status=resp.status_code,
-                headers=response_headers
+                response=resp.content, status=resp.status_code, headers=response_headers
             )
 
         @self.app.errorhandler(Exception)
@@ -139,13 +171,7 @@ class Routes:
 
             if isinstance(e, CustomError):
                 # 处理自定义异常
-                return jsonify({
-                    "status": "failed",
-                    "message": str(e)
-                }), e.code
+                return jsonify({"status": "failed", "message": str(e)}), e.code
             else:
                 # 处理其他非预期的异常
-                return jsonify({
-                    "status": "failed",
-                    "message": str(e)
-                }), 500
+                return jsonify({"status": "failed", "message": str(e)}), 500
